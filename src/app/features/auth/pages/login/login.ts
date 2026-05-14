@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Auth } from '../../services/auth';
-
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -19,11 +18,16 @@ export class LoginComponent {
   lastName: string = '';
   email: string = '';
   password: string = '';
+  showPassword = false;
 
   constructor(private auth: Auth, private router: Router) {}
 
   toggleMode() {
     this.isLoginMode = !this.isLoginMode;
+  }
+
+  togglePassword() {
+    this.showPassword = !this.showPassword;
   }
 
   login() {
@@ -34,7 +38,7 @@ export class LoginComponent {
         localStorage.setItem('firstName', res.nombre || 'Usuario');
         localStorage.setItem('userEmail', res.email);
         localStorage.setItem('userRole', res.rol);
-        
+
         if (res.rol === 'Administrador') {
           this.router.navigate(['/dashboard']);
         } else {
@@ -46,11 +50,11 @@ export class LoginComponent {
   }
 
   register() {
-    const data = { 
-      nombres: this.firstName, 
-      apellidos: this.lastName, 
-      email: this.email, 
-      password: this.password 
+    const data = {
+      nombres: this.firstName,
+      apellidos: this.lastName,
+      email: this.email,
+      password: this.password
     };
     this.auth.register(data).subscribe({
       next: (res: any) => {
@@ -58,7 +62,7 @@ export class LoginComponent {
         localStorage.setItem('firstName', res.nombre || 'Usuario');
         localStorage.setItem('userEmail', res.email);
         localStorage.setItem('userRole', res.rol);
-        
+
         if (res.rol === 'Administrador') {
           this.router.navigate(['/dashboard']);
         } else {
