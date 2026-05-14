@@ -1,0 +1,101 @@
+<div class="store-layout">
+  <!-- Navbar inside Store for full control -->
+  <nav class="store-nav">
+    <div class="nav-brand">
+      <i class="ph-bold ph-storefront"></i>
+      <span>PC Store</span>
+    </div>
+    <div class="nav-actions">
+      <div class="cart-trigger" (click)="toggleCart()">
+        <i class="ph ph-shopping-cart"></i>
+        <span class="cart-badge" *ngIf="cartService.getItemCount() > 0">
+          {{ cartService.getItemCount() }}
+        </span>
+      </div>
+      <div class="user-profile-container">
+        <div class="user-trigger" (click)="toggleUserMenu($event)">
+          <i class="ph ph-user-circle"></i>
+        </div>
+        
+        <!-- User Dropdown Menu -->
+        <div class="user-dropdown" *ngIf="isUserMenuOpen">
+          <div class="dropdown-header">
+            <span class="user-name">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
+            <span class="user-email">{{ currentUser?.email }}</span>
+          </div>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item logout" (click)="logout()">
+            <i class="ph ph-sign-out"></i>
+            <span>Cerrar Sesión</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="store-container">
+    <!-- Sidebar Categories -->
+    <aside class="sidebar">
+      <h3 class="sidebar-title">Categorías</h3>
+      <ul class="category-list">
+        <li [class.active]="selectedCategoryId === null" (click)="selectCategory(null)">
+          <i class="ph ph-squares-four"></i>
+          <span>Todas</span>
+        </li>
+        <li *ngFor="let cat of categories" 
+            [class.active]="selectedCategoryId === cat.id"
+            (click)="selectCategory(cat.id || null)">
+          <i class="ph ph-tag"></i>
+          <span>{{ cat.nombre }}</span>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main Content Grid -->
+    <main class="product-grid-container">
+      <header class="grid-header">
+        <h2>{{ selectedCategoryId ? 'Resultados' : 'Todos los Productos' }}</h2>
+        <p>{{ products.length }} productos disponibles</p>
+      </header>
+
+      <div class="product-grid">
+        <div class="product-card" *ngFor="let product of products">
+          <div class="card-image">
+            <img src="https://placehold.co/400x300?text={{product.nombre}}" alt="Product">
+            <span class="category-pill">{{ product.categoria?.nombre }}</span>
+          </div>
+          <div class="card-body">
+            <div class="card-brand">{{ product.marca?.nombre }}</div>
+            <h4 class="card-title">{{ product.nombre }}</h4>
+            <div class="card-price">{{ product.precio | currency:'USD' }}</div>
+            
+            <div class="card-footer">
+              <div class="stock-info" [class.out-of-stock]="product.stock === 0">
+                <i class="ph" [ngClass]="product.stock === 0 ? 'ph-prohibit' : 'ph-check-circle'"></i>
+                <span>{{ product.stock === 0 ? 'Agotado' : product.stock + ' disponibles' }}</span>
+              </div>
+              <button class="btn-add" 
+                      [disabled]="product.stock === 0"
+                      (click)="addToCart(product)">
+                <i class="ph ph-shopping-cart-simple"></i>
+                <span>{{ product.stock === 0 ? 'Sin Stock' : 'Añadir' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="empty-state" *ngIf="products.length === 0">
+        <i class="ph ph-package"></i>
+        <p>No hay productos en esta categoría</p>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Cart Sidebar Overlay -->
+<app-cart-panel 
+  [isOpen]="isCartOpen" 
+  (onClose)="toggleCart()"
+  (onCheckout)="loadProducts()">
+</app-cart-panel>

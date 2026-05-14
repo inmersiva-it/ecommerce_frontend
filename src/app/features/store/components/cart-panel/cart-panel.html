@@ -1,0 +1,60 @@
+<div class="cart-overlay" [class.open]="isOpen" (click)="close()">
+  <div class="cart-sidebar" (click)="$event.stopPropagation()">
+    <header class="cart-header">
+      <div class="header-title">
+        <i class="ph ph-shopping-cart"></i>
+        <h3>Mi Carrito</h3>
+      </div>
+      <button class="close-btn" (click)="close()">&times;</button>
+    </header>
+
+    <div class="cart-body">
+      <div class="cart-empty" *ngIf="(cartService.items$ | async)?.length === 0">
+        <i class="ph ph-shopping-bag-open"></i>
+        <p>Tu carrito está vacío</p>
+        <button class="btn-primary" (click)="close()">Explorar Tienda</button>
+      </div>
+
+      <div class="cart-items" *ngIf="(cartService.items$ | async) as items">
+        <div class="cart-item" *ngFor="let item of items">
+          <img src="https://placehold.co/100x100?text={{item.producto.nombre}}" alt="Product">
+          <div class="item-info">
+            <h4 class="item-name">{{ item.producto.nombre }}</h4>
+            <div class="item-price">{{ item.producto.precio | currency:'USD' }}</div>
+            <div class="item-controls">
+              <div class="quantity-picker">
+                <button (click)="updateQuantity(item.producto.id, -1)">-</button>
+                <span>{{ item.cantidad }}</span>
+                <button (click)="updateQuantity(item.producto.id, 1)">+</button>
+              </div>
+              <div class="item-subtotal">
+                {{ (item.producto.precio || 0) * item.cantidad | currency:'USD' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="cart-footer" *ngIf="cartService.getItemCount() > 0">
+      <div class="total-row">
+        <span>Total General</span>
+        <span class="total-amount">{{ cartService.getTotal() | currency:'USD' }}</span>
+      </div>
+      <button class="btn-checkout" (click)="openCheckoutConfirmation()">
+        Finalizar Compra
+      </button>
+    </footer>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<app-confirm-dialog
+  [isOpen]="isConfirmOpen"
+  title="Confirmar Pago"
+  [message]="'¿Deseas confirmar el pago por un total de ' + (cartService.getTotal() | currency:'USD') + '?'"
+  confirmText="Sí, pagar ahora"
+  cancelText="Cancelar"
+  (onConfirm)="confirmCheckout()"
+  (onCancel)="isConfirmOpen = false">
+</app-confirm-dialog>

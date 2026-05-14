@@ -1,0 +1,61 @@
+<div class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>{{ product ? 'Editar Producto' : 'Nuevo Producto' }}</h3>
+      <button class="close-btn" (click)="close()"><i class="ph ph-x"></i></button>
+    </div>
+
+    <form [formGroup]="productForm" (ngSubmit)="save()" class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Nombre del Producto</label>
+          <input type="text" formControlName="nombre" placeholder="Ej: Monitor Gaming 27''" [class.error]="productForm.get('nombre')?.touched && productForm.get('nombre')?.invalid">
+          <small class="error-msg" *ngIf="productForm.get('nombre')?.touched && productForm.get('nombre')?.invalid">El nombre es requerido (mín. 3 caracteres)</small>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Descripción</label>
+          <textarea formControlName="descripcion" rows="3" placeholder="Describe las características técnicas..." [class.error]="productForm.get('descripcion')?.touched && productForm.get('descripcion')?.invalid"></textarea>
+          <small class="error-msg" *ngIf="productForm.get('descripcion')?.touched && productForm.get('descripcion')?.invalid">La descripción es requerida</small>
+        </div>
+
+        <div class="form-group">
+          <label>Precio ($)</label>
+          <input type="number" formControlName="precio" step="0.01" [class.error]="productForm.get('precio')?.touched && productForm.get('precio')?.invalid">
+          <small class="error-msg" *ngIf="productForm.get('precio')?.touched && productForm.get('precio')?.invalid">Ingresa un precio válido</small>
+        </div>
+
+        <div class="form-group">
+          <label>Stock Inicial</label>
+          <input type="number" formControlName="stock" [class.error]="productForm.get('stock')?.touched && productForm.get('stock')?.invalid">
+          <small class="error-msg" *ngIf="productForm.get('stock')?.touched && productForm.get('stock')?.invalid">Stock no válido</small>
+        </div>
+
+        <div class="form-group">
+          <label>Categoría</label>
+          <select formControlName="categoriaId" [class.error]="productForm.get('categoriaId')?.touched && productForm.get('categoriaId')?.invalid">
+            <option value="" disabled>Seleccionar...</option>
+            <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.nombre }}</option>
+          </select>
+          <small class="error-msg" *ngIf="productForm.get('categoriaId')?.touched && productForm.get('categoriaId')?.invalid">Selecciona una categoría</small>
+        </div>
+
+        <div class="form-group">
+          <label>Marca</label>
+          <select formControlName="marcaId" [class.error]="productForm.get('marcaId')?.touched && productForm.get('marcaId')?.invalid">
+            <option value="" disabled>Seleccionar...</option>
+            <option *ngFor="let marca of brands" [value]="marca.id">{{ marca.nombre }}</option>
+          </select>
+          <small class="error-msg" *ngIf="productForm.get('marcaId')?.touched && productForm.get('marcaId')?.invalid">Selecciona una marca</small>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="close()">Cancelar</button>
+        <button type="submit" class="btn-save" [disabled]="productForm.invalid">
+          {{ product ? 'Actualizar Producto' : 'Guardar Producto' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

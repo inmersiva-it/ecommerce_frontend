@@ -1,0 +1,13 @@
+<div class="toast-container">
+  <div *ngFor="let n of notifications" 
+       class="toast-item" 
+       [ngClass]="n.type"
+       (click)="removeNotification(n.id)">
+    <div class="toast-content">
+      <i class="ph-bold" 
+         [ngClass]="{'ph-check-circle': n.type === 'success', 'ph-x-circle': n.type === 'error', 'ph-info': n.type === 'info'}"></i>
+      <span class="message">{{ n.message }}</span>
+    </div>
+    <button class="close-btn">&times;</button>
+  </div>
+</div>

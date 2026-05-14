@@ -1,0 +1,101 @@
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.collapsed]="!isSidebarOpen">
+    <div class="sidebar-header">
+      <div class="logo-icon"><i class="ph-fill ph-desktop"></i></div>
+      <h2 class="brand-text" *ngIf="isSidebarOpen">PC Store</h2>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/dashboard/productos" routerLinkActive="active" class="nav-item">
+        <div class="icon"><i class="ph ph-package"></i></div>
+        <span class="text" *ngIf="isSidebarOpen">Productos</span>
+      </a>
+      
+      <a routerLink="/dashboard/categorias" routerLinkActive="active" class="nav-item">
+        <div class="icon"><i class="ph ph-squares-four"></i></div>
+        <span class="text" *ngIf="isSidebarOpen">Categorías</span>
+      </a>
+
+      <a routerLink="/dashboard/configuracion" routerLinkActive="active" class="nav-item">
+        <div class="icon"><i class="ph ph-gear"></i></div>
+        <span class="text" *ngIf="isSidebarOpen">Configuración</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="main-wrapper">
+    <!-- Top Header -->
+    <header class="top-header">
+      <button class="toggle-btn" (click)="toggleSidebar()">
+        <i class="ph ph-list"></i>
+      </button>
+
+      <div class="header-actions">
+        <button class="lang-toggle" (click)="toggleLanguage()">
+          <i class="ph ph-globe icon-lang"></i>
+          <span>{{ currentLang === 'en' ? 'Español' : 'English' }}</span>
+        </button>
+        
+        <div class="user-profile-container">
+          <div class="user-profile" (click)="toggleProfileMenu($event)">
+            <div class="user-info">
+              <span class="user-name">{{ fullName }}</span>
+              <span class="user-role">{{ userRole }}</span>
+            </div>
+            <div class="avatar-circle">{{ (firstName || 'U').charAt(0) }}</div>
+            <i class="ph ph-caret-down"></i>
+          </div>
+
+          <!-- Dropdown Menu -->
+          <div class="profile-dropdown" *ngIf="isProfileMenuOpen">
+            <button class="dropdown-item" (click)="openEditProfile()">
+              <i class="ph ph-pencil-simple"></i>
+              <span>Editar Perfil</span>
+            </button>
+            <button class="dropdown-item text-danger" (click)="logout()">
+              <i class="ph ph-sign-out"></i>
+              <span>Cerrar Sesión</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Router -->
+    <main class="content-area">
+      <div class="content-card">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal-overlay" *ngIf="isEditingProfile">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Editar Perfil</h3>
+          <button class="close-btn" (click)="closeEditProfile()"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="input-group">
+            <label>Nombres</label>
+            <input type="text" [(ngModel)]="tempFirstName" class="modal-input" />
+          </div>
+          <div class="input-group">
+            <label>Apellidos</label>
+            <input type="text" [(ngModel)]="tempLastName" class="modal-input" />
+          </div>
+          <div class="input-group">
+            <label>Especialidad / Rol</label>
+            <input type="text" [(ngModel)]="tempRole" class="modal-input" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="closeEditProfile()">Cancelar</button>
+          <button class="btn-save" (click)="saveProfile()">Guardar Cambios</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

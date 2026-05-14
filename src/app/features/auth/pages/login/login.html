@@ -1,0 +1,89 @@
+<div class="split-layout">
+  <div class="image-section">
+    <!-- Slider de imágenes -->
+    <div class="bg-slide bg-1"></div>
+    <div class="bg-slide bg-2"></div>
+    <div class="bg-slide bg-3"></div>
+    
+    <div class="overlay">
+      <div class="branding">
+        <div class="logo-icon"><i class="ph-fill ph-desktop"></i></div>
+        <div class="branding-text">
+          <h1>PC Store</h1>
+          <p>Componentes premium para tu PC gamer</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="form-section">
+    <div class="login-card">
+      <div class="logo-mobile">
+        <span class="mobile-icon"><i class="ph-fill ph-desktop"></i></span> PC Store
+      </div>
+      
+      <div class="header-text">
+        <h2>{{ isLoginMode ? 'Bienvenido de nuevo' : 'Crea tu cuenta' }}</h2>
+        <p class="subtitle">{{ isLoginMode ? 'Ingresa tus credenciales para acceder' : 'Regístrate para comprar los mejores componentes de PC' }}</p>
+      </div>
+
+      <!-- Campos Nombres y Apellidos (Solo Registro) -->
+      <div class="input-row" *ngIf="!isLoginMode">
+        <div class="input-group">
+          <label>Nombres</label>
+          <div class="input-wrapper">
+            <input type="text" [(ngModel)]="firstName" placeholder="Ej. Juan" />
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Apellidos</label>
+          <div class="input-wrapper">
+            <input type="text" [(ngModel)]="lastName" placeholder="Ej. Pérez" />
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Correo Electrónico</label>
+        <div class="input-wrapper">
+          <input type="email" [(ngModel)]="email" placeholder="ejemplo@mail.com" />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Contraseña</label>
+        <div class="input-wrapper">
+          <input type="password" [(ngModel)]="password" placeholder="••••••••" />
+        </div>
+      </div>
+
+      <div class="forgot-pwd" *ngIf="isLoginMode">
+        <a href="#">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <button class="login-btn" (click)="isLoginMode ? login() : register()">
+        {{ isLoginMode ? 'Ingresar al Sistema' : 'Crear Cuenta' }}
+      </button>
+
+      <div class="toggle-mode">
+        {{ isLoginMode ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?' }}
+        <a href="javascript:void(0)" (click)="toggleMode()">{{ isLoginMode ? 'Regístrate aquí' : 'Inicia sesión' }}</a>
+      </div>
+      
+      <div class="divider">
+        <span>O ingresa con</span>
+      </div>
+
+      <div class="social-login">
+        <button class="social-btn google" (click)="socialLogin('Google')">
+          <i class="ph ph-google-logo"></i> Google
+        </button>
+        <button class="social-btn facebook" (click)="socialLogin('Facebook')">
+          <i class="ph ph-facebook-logo"></i> Facebook
+        </button>
+      </div>
+      
+      <p class="help-text">¿Necesitas ayuda? <a href="#">Soporte Técnico</a></p>
+    </div>
+  </div>
+</div>

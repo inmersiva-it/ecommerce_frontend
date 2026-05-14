@@ -1,0 +1,126 @@
+<div class="product-list-container">
+  <div class="header-section">
+    <div class="title-group">
+      <h1>Gestión de Productos</h1>
+      <p>Administra el inventario de tecnología de tu tienda</p>
+    </div>
+    <div class="actions-group">
+      <div class="filter-wrapper">
+        <i class="ph ph-funnel"></i>
+        <select [(ngModel)]="selectedCategoryId" (change)="applyFilter()" class="filter-select">
+          <option value="">Todas las Categorías</option>
+          <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.nombre }}</option>
+        </select>
+      </div>
+      <button class="btn-primary" (click)="openCreateForm()">
+        <i class="ph ph-plus"></i>
+        <span>Nuevo Producto</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <table class="modern-table">
+      <thead>
+        <tr>
+          <th *ngFor="let col of columns; let i = index"
+              [draggable]="!col.noDrag"
+              (dragstart)="onDragStart(i)"
+              (dragover)="onDragOver($event, i)"
+              (drop)="onDrop($event, i)"
+              (dragend)="onDragEnd()"
+              [class.dragging]="draggedColumnIndex === i"
+              [class.drop-target]="dragOverIndex === i"
+              [class.text-center]="col.key === 'acciones'">
+            
+            <div class="header-content">
+              <span class="header-label">{{ col.label }}</span>
+              
+              <div class="column-filter" *ngIf="!col.noFilter">
+                <input type="text" 
+                       class="filter-input-small" 
+                       [class.visible]="col.showFilter"
+                       [(ngModel)]="col.filter"
+                       (keyup)="applyFilter()"
+                       placeholder="Buscar..."
+                       (click)="$event.stopPropagation()">
+                <i class="ph" 
+                   [ngClass]="col.showFilter ? 'ph-x' : 'ph-magnifying-glass'"
+                   class="filter-icon"
+                   [class.active]="col.filter"
+                   (click)="toggleFilter(col); $event.stopPropagation()"></i>
+              </div>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of filteredProducts" class="table-row">
+          <ng-container *ngFor="let col of columns">
+            <td [ngSwitch]="col.key" [class.text-center]="col.key === 'acciones'" [class.actions-cell]="col.key === 'acciones'">
+              
+              <!-- ID Column -->
+              <span *ngSwitchCase="'id'" class="id-badge">#{{ product.id }}</span>
+              
+              <!-- Nombre Column -->
+              <div *ngSwitchCase="'nombre'" class="product-name-cell">
+                <span class="product-name">{{ product.nombre }}</span>
+                <span class="product-desc">{{ product.descripcion }}</span>
+              </div>
+              
+              <!-- Categoria Column -->
+              <span *ngSwitchCase="'categoria'" class="category-tag">{{ product.categoria?.nombre }}</span>
+              
+              <!-- Precio Column -->
+              <span *ngSwitchCase="'precio'" class="price-text">{{ product.precio | currency:'USD':'symbol':'1.2-2' }}</span>
+              
+              <!-- Stock Column -->
+              <div *ngSwitchCase="'stock'" class="stock-badge" [class.low-stock]="product.stock < 10">
+                <i class="ph ph-warning-circle" *ngIf="product.stock < 10"></i>
+                <span>{{ product.stock }}</span>
+                <small *ngIf="product.stock < 10">Bajo stock</small>
+              </div>
+              
+              <!-- Acciones Column -->
+              <div *ngSwitchCase="'acciones'" class="actions-cell">
+                <button class="action-btn edit" (click)="openEditForm(product)" title="Editar">
+                  <i class="ph ph-pencil-simple"></i>
+                </button>
+                <button class="action-btn delete" (click)="confirmDelete(product.id)" title="Eliminar">
+                  <i class="ph ph-trash"></i>
+                </button>
+              </div>
+              
+              <!-- Default Column -->
+              <span *ngSwitchDefault>{{ getNestedValue(product, col.key) }}</span>
+              
+            </td>
+          </ng-container>
+        </tr>
+        <tr *ngIf="filteredProducts.length === 0">
+          <td [attr.colspan]="columns.length" class="empty-state">
+            <i class="ph ph-package"></i>
+            <p>No se encontraron productos con los filtros aplicados</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Form -->
+<app-product-form 
+  *ngIf="isFormOpen" 
+  [product]="selectedProduct" 
+  (onClose)="closeForm()" 
+  (onSave)="onFormSaved()">
+</app-product-form>
+
+<!-- Confirmation Dialog -->
+<app-confirm-dialog
+  [isOpen]="isConfirmOpen"
+  title="¿Eliminar producto?"
+  message="¿Estás seguro que deseas eliminar este elemento? Esta acción no se puede deshacer."
+  (onConfirm)="executeDelete()"
+  (onCancel)="cancelDelete()">
+</app-confirm-dialog>
