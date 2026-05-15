@@ -3,7 +3,7 @@
   <aside class="sidebar" [class.collapsed]="!isSidebarOpen">
     <div class="sidebar-header">
       <div class="logo-icon"><i class="ph-fill ph-desktop"></i></div>
-      <h2 class="brand-text" *ngIf="isSidebarOpen">PC Store</h2>
+      <h2 class="brand-text" *ngIf="isSidebarOpen">PC capibaras</h2>
     </div>
 
     <nav class="sidebar-nav">
@@ -11,10 +11,25 @@
         <div class="icon"><i class="ph ph-package"></i></div>
         <span class="text" *ngIf="isSidebarOpen">Productos</span>
       </a>
-      
+
       <a routerLink="/dashboard/categorias" routerLinkActive="active" class="nav-item">
         <div class="icon"><i class="ph ph-squares-four"></i></div>
         <span class="text" *ngIf="isSidebarOpen">Categorías</span>
+      </a>
+
+      <a routerLink="/dashboard/reports" routerLinkActive="active" class="nav-item">
+        <div class="icon"><i class="ph ph-chart-bar"></i></div>
+        <span class="text" *ngIf="isSidebarOpen">Reportes</span>
+      </a>
+
+      <a routerLink="/dashboard/usuarios" routerLinkActive="active" class="nav-item">
+        <div class="icon"><i class="ph ph-users-three"></i></div>
+        <span class="text" *ngIf="isSidebarOpen">Usuarios</span>
+      </a>
+
+      <a routerLink="/dashboard/promociones" routerLinkActive="active" class="nav-item">
+        <div class="icon"><i class="ph ph-tag"></i></div>
+        <span class="text" *ngIf="isSidebarOpen">Promociones</span>
       </a>
 
       <a routerLink="/dashboard/configuracion" routerLinkActive="active" class="nav-item">
@@ -37,7 +52,7 @@
           <i class="ph ph-globe icon-lang"></i>
           <span>{{ currentLang === 'en' ? 'Español' : 'English' }}</span>
         </button>
-        
+
         <div class="user-profile-container">
           <div class="user-profile" (click)="toggleProfileMenu($event)">
             <div class="user-info">

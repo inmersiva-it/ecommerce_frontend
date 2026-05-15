@@ -14,6 +14,35 @@ export class CartService {
   private itemsSubject = new BehaviorSubject<CartItem[]>([]);
   items$ = this.itemsSubject.asObservable();
 
+  constructor() {
+    this.loadCart();
+    this.items$.subscribe(items => this.saveCart(items));
+  }
+
+  private getStorageKey(): string {
+    const userEmail = localStorage.getItem('userEmail');
+    return userEmail ? `cart_${userEmail}` : 'cart_guest';
+  }
+
+  private saveCart(items: CartItem[]) {
+    const key = this.getStorageKey();
+    localStorage.setItem(key, JSON.stringify(items));
+  }
+
+  public loadCart() {
+    const key = this.getStorageKey();
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      try {
+        this.itemsSubject.next(JSON.parse(saved));
+      } catch (e) {
+        this.itemsSubject.next([]);
+      }
+    } else {
+      this.itemsSubject.next([]);
+    }
+  }
+
   addToCart(producto: Producto) {
     const currentItems = this.itemsSubject.value;
     const existingItem = currentItems.find(item => item.producto.id === producto.id);

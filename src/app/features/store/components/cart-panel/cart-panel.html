@@ -19,7 +19,12 @@
         <div class="cart-item" *ngFor="let item of items">
           <img src="https://placehold.co/100x100?text={{item.producto.nombre}}" alt="Product">
           <div class="item-info">
-            <h4 class="item-name">{{ item.producto.nombre }}</h4>
+            <div class="item-header-row">
+              <h4 class="item-name">{{ item.producto.nombre }}</h4>
+              <button class="btn-remove-item" (click)="removeItem(item.producto.id)" title="Eliminar producto">
+                <i class="ph ph-trash"></i>
+              </button>
+            </div>
             <div class="item-price">{{ item.producto.precio | currency:'USD' }}</div>
             <div class="item-controls">
               <div class="quantity-picker">
@@ -37,9 +42,39 @@
     </div>
 
     <footer class="cart-footer" *ngIf="cartService.getItemCount() > 0">
+      <!-- Cupón de descuento -->
+      <div class="coupon-section">
+        <div class="coupon-input-row">
+          <input
+            type="text"
+            class="coupon-input"
+            placeholder="¿Tienes un cupón?"
+            [(ngModel)]="codigoCupon"
+            [disabled]="descuentoPorcentaje > 0"
+          />
+          <button class="btn-apply-coupon" (click)="aplicarCupon()" *ngIf="descuentoPorcentaje === 0">
+            Aplicar
+          </button>
+          <button class="btn-remove-coupon" (click)="quitarCupon()" *ngIf="descuentoPorcentaje > 0">
+            <i class="ph ph-x"></i>
+          </button>
+        </div>
+        <div class="coupon-message" *ngIf="cuponMsg" [class.coupon-ok]="descuentoPorcentaje > 0" [class.coupon-error]="descuentoPorcentaje === 0 && cuponMsg">
+          {{ cuponMsg }}
+        </div>
+      </div>
+
+      <div class="total-row" *ngIf="descuentoPorcentaje > 0">
+        <span>Subtotal</span>
+        <span>{{ cartService.getTotal() | currency:'USD' }}</span>
+      </div>
+      <div class="total-row discount-row" *ngIf="descuentoPorcentaje > 0">
+        <span>Descuento ({{ descuentoPorcentaje }}%)</span>
+        <span class="discount-amount">-{{ getDescuento() | currency:'USD' }}</span>
+      </div>
       <div class="total-row">
         <span>Total General</span>
-        <span class="total-amount">{{ cartService.getTotal() | currency:'USD' }}</span>
+        <span class="total-amount">{{ getTotalConDescuento() | currency:'USD' }}</span>
       </div>
       <button class="btn-checkout" (click)="openCheckoutConfirmation()">
         Finalizar Compra
@@ -52,7 +87,7 @@
 <app-confirm-dialog
   [isOpen]="isConfirmOpen"
   title="Confirmar Pago"
-  [message]="'¿Deseas confirmar el pago por un total de ' + (cartService.getTotal() | currency:'USD') + '?'"
+  [message]="'¿Deseas confirmar el pago por un total de ' + (getTotalConDescuento() | currency:'USD') + (descuentoPorcentaje > 0 ? ' (con ' + descuentoPorcentaje + '% de descuento)' : '') + '?'"
   confirmText="Sí, pagar ahora"
   cancelText="Cancelar"
   (onConfirm)="confirmCheckout()"

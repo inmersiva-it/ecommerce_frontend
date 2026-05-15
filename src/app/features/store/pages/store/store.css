@@ -26,6 +26,48 @@
   color: #0f172a;
 }
 
+.nav-search {
+  flex: 1;
+  max-width: 500px;
+  margin: 0 40px;
+}
+
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #f1f5f9;
+  border-radius: 12px;
+  padding: 8px 16px;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.search-wrapper:focus-within {
+  background: white;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+}
+
+.search-icon {
+  color: #64748b;
+  font-size: 1.2rem;
+  margin-right: 12px;
+}
+
+.search-input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 1rem;
+  color: #0f172a;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: #94a3b8;
+}
+
 .nav-actions {
   display: flex;
   align-items: center;

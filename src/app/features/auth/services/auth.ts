@@ -18,6 +18,14 @@ export class Auth {
     return this.http.post(`${this.API}/register`, data);
   }
 
+  checkEmail(email: string) {
+    return this.http.post(`${this.API}/check-email`, { email });
+  }
+
+  resetPassword(email: string, password: string) {
+    return this.http.post(`${this.API}/reset-password`, { email, password }, { responseType: 'text' });
+  }
+
   getProfile() {
     const token = localStorage.getItem('token');
     return this.http.get(`${this.API}/profile`, {
@@ -34,7 +42,9 @@ export class Auth {
 
   logout() {
     localStorage.removeItem('token');
-    localStorage.removeItem('user'); // Also remove user data if stored
+    localStorage.removeItem('firstName');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userRole');
     window.location.href = '/login';
   }
 }

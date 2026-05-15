@@ -1,0 +1,67 @@
+<div class="page-header">
+  <h2><i class="ph ph-users-three"></i> Gestión de Usuarios</h2>
+  <p>Administra el acceso de los clientes registrados en la plataforma.</p>
+</div>
+
+<div class="loading-state" *ngIf="isLoading">
+  <i class="ph ph-spinner ph-spin"></i> Cargando usuarios...
+</div>
+
+<div class="table-container" *ngIf="!isLoading">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Rol</th>
+        <th>Estado</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let usuario of usuarios" [class.inactive-row]="!usuario.activo">
+        <td>#{{ usuario.id }}</td>
+        <td>
+          <div class="user-cell">
+            <div class="avatar">{{ usuario.nombre.charAt(0).toUpperCase() }}</div>
+            <strong>{{ usuario.nombre }}</strong>
+          </div>
+        </td>
+        <td>{{ usuario.email }}</td>
+        <td>
+          <span class="badge" [class.badge-admin]="usuario.rol === 'ADMIN'" [class.badge-cliente]="usuario.rol !== 'ADMIN'">
+            {{ usuario.rol }}
+          </span>
+        </td>
+        <td>
+          <span class="status-pill" [class.active]="usuario.activo" [class.blocked]="!usuario.activo">
+            <i class="ph" [class.ph-check-circle]="usuario.activo" [class.ph-x-circle]="!usuario.activo"></i>
+            {{ usuario.activo ? 'Activo' : 'Bloqueado' }}
+          </span>
+        </td>
+        <td>
+          <button
+            class="btn-toggle"
+            [class.btn-block]="usuario.activo"
+            [class.btn-unblock]="!usuario.activo"
+            (click)="openToggleConfirmation(usuario)">
+            <i class="ph" [class.ph-lock]="usuario.activo" [class.ph-lock-open]="!usuario.activo"></i>
+            {{ usuario.activo ? 'Bloquear' : 'Activar' }}
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="usuarios.length === 0">
+        <td colspan="6" class="empty-row">No hay usuarios registrados.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<app-confirm-dialog
+  [isOpen]="isConfirmOpen"
+  title="Cambiar Estado de Usuario"
+  [message]="confirmMessage"
+  (onConfirm)="confirmToggle()"
+  (onCancel)="isConfirmOpen = false">
+</app-confirm-dialog>

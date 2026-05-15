@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../../productos/services/product.service';
 import { CommonService } from '../../../productos/services/common.service';
 import { CartService } from '../../../../core/services/cart.service';
@@ -9,10 +10,12 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { Auth } from '../../../auth/services/auth';
 import { HostListener, ElementRef } from '@angular/core';
 
+import { Router } from '@angular/router';
+
 @Component({
   selector: 'app-store',
   standalone: true,
-  imports: [CommonModule, CartPanelComponent],
+  imports: [CommonModule, FormsModule, CartPanelComponent],
   templateUrl: './store.html',
   styleUrls: ['./store.css']
 })
@@ -23,6 +26,16 @@ export class StoreComponent implements OnInit {
   isCartOpen = false;
   isUserMenuOpen = false;
   currentUser: any = null;
+  searchTerm: string = '';
+
+  get filteredProducts(): Producto[] {
+    if (!this.searchTerm) return this.products;
+    const term = this.searchTerm.toLowerCase();
+    return this.products.filter(p => 
+      p.nombre.toLowerCase().includes(term) || 
+      (p.marca && p.marca.nombre.toLowerCase().includes(term))
+    );
+  }
 
   constructor(
     private productService: ProductService,
@@ -30,8 +43,14 @@ export class StoreComponent implements OnInit {
     public cartService: CartService,
     private notificationService: NotificationService,
     private authService: Auth,
-    private eRef: ElementRef
+    private eRef: ElementRef,
+    private router: Router
   ) {}
+
+  goToMisCompras() {
+    this.router.navigate(['/mis-compras']);
+    this.isUserMenuOpen = false;
+  }
 
   ngOnInit(): void {
     this.loadProducts();

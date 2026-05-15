@@ -1,0 +1,60 @@
+<div class="mis-compras-container">
+  <div class="top-bar">
+    <button class="back-btn" (click)="goBack()">
+      <i class="ph ph-arrow-left"></i> Volver a la Tienda
+    </button>
+  </div>
+  <header class="header">
+    <div class="header-content">
+      <h2>Mis Compras</h2>
+      <p>Historial de todas tus compras realizadas</p>
+    </div>
+  </header>
+
+  <div class="loading-state" *ngIf="isLoading">
+    <i class="ph ph-spinner ph-spin"></i> Cargando...
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && compras.length === 0">
+    <i class="ph ph-shopping-bag-open"></i>
+    <h3>Aún no has realizado compras</h3>
+    <p>¡Explora nuestra tienda y encuentra tus productos favoritos!</p>
+  </div>
+
+  <div class="compras-list" *ngIf="!isLoading && compras.length > 0">
+    <div class="compra-card" *ngFor="let compra of compras">
+      <div class="compra-header">
+        <div class="compra-info">
+          <span class="compra-fecha"><i class="ph ph-calendar"></i> {{ compra.fecha | date:'short' }}</span>
+          <span class="compra-id">Pedido #{{ compra.id }}</span>
+        </div>
+        <div class="compra-total">
+          Total: <strong>{{ compra.total | currency:'USD' }}</strong>
+          <button class="btn-delete-compra" (click)="openDeleteConfirmation(compra.id)" title="Eliminar del historial">
+            <i class="ph ph-trash"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="compra-body">
+        <div class="detalle-item" *ngFor="let detalle of compra.detalles">
+          <div class="item-name">
+            <span class="cantidad">{{ detalle.cantidad }}x</span>
+            {{ detalle.productoNombre }}
+          </div>
+          <div class="item-subtotal">
+            {{ detalle.subtotal | currency:'USD' }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-confirm-dialog
+  [isOpen]="isConfirmDeleteOpen"
+  title="Eliminar Compra"
+  message="¿Estás seguro de que deseas eliminar esta compra de tu historial? Esta acción no se puede deshacer."
+  (onConfirm)="confirmDelete()"
+  (onCancel)="isConfirmDeleteOpen = false">
+</app-confirm-dialog>
