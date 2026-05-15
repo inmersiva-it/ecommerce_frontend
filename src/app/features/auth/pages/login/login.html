@@ -63,7 +63,7 @@
       </div>
 
       <div class="forgot-pwd" *ngIf="isLoginMode">
-        <a href="#">¿Olvidaste tu contraseña?</a>
+        <a routerLink="/forgot-password">¿Olvidaste tu contraseña?</a>
       </div>
 
       <button class="login-btn" (click)="isLoginMode ? login() : register()">

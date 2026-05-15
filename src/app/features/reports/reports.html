@@ -1,1 +1,75 @@
-<p>reports works!</p>
+<div class="reports-container">
+  <div class="header">
+    <h2>Reportes de Ventas</h2>
+    <p>Historial completo de compras realizadas por los clientes</p>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon"><i class="ph ph-shopping-cart"></i></div>
+      <div class="stat-info">
+        <h3>{{ compras.length }}</h3>
+        <p>Ventas Totales</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon success"><i class="ph ph-currency-dollar"></i></div>
+      <div class="stat-info">
+        <h3>{{ totalVendido | currency:'USD' }}</h3>
+        <p>Ingresos Generados</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <div class="loading-state" *ngIf="isLoading">
+      <i class="ph ph-spinner ph-spin"></i> Cargando reportes...
+    </div>
+
+    <table class="reports-table" *ngIf="!isLoading">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Fecha</th>
+          <th>Cliente</th>
+          <th>Email</th>
+          <th>Total</th>
+          <th>Detalles</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let compra of compras">
+          <td>#{{ compra.id }}</td>
+          <td>{{ compra.fecha | date:'medium' }}</td>
+          <td><strong>{{ compra.usuarioNombre }}</strong></td>
+          <td>{{ compra.usuarioEmail }}</td>
+          <td class="amount">{{ compra.total | currency:'USD' }}</td>
+          <td>
+            <ul class="detalle-lista">
+              <li *ngFor="let d of compra.detalles">
+                {{ d.cantidad }}x {{ d.productoNombre }}
+              </li>
+            </ul>
+          </td>
+          <td>
+            <button class="btn-delete" (click)="openDeleteConfirmation(compra.id)">
+              <i class="ph ph-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="compras.length === 0">
+          <td colspan="7" class="empty-row">No hay ventas registradas aún.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-confirm-dialog
+  [isOpen]="isConfirmDeleteOpen"
+  title="Eliminar Reporte"
+  message="¿Estás seguro de que deseas eliminar este registro de compra? Esta acción no se puede deshacer."
+  (onConfirm)="confirmDelete()"
+  (onCancel)="isConfirmDeleteOpen = false">
+</app-confirm-dialog>

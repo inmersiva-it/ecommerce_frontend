@@ -1,24 +1,28 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CompraService, CompraDTO } from '../../core/services/compra.service';
-import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog';
+import { Router } from '@angular/router';
+import { CompraService, CompraDTO } from '../../../../core/services/compra.service';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog';
 
 @Component({
-  selector: 'app-reports',
+  selector: 'app-mis-compras',
   standalone: true,
   imports: [CommonModule, ConfirmDialogComponent],
-  templateUrl: './reports.html',
-  styleUrl: './reports.css',
+  templateUrl: './mis-compras.html',
+  styleUrls: ['./mis-compras.css']
 })
-export class Reports implements OnInit {
+export class MisComprasComponent implements OnInit {
   compras: CompraDTO[] = [];
   isLoading = true;
-  totalVendido = 0;
-
+  
   isConfirmDeleteOpen = false;
   compraIdToDelete: number | null = null;
 
-  constructor(private compraService: CompraService) {}
+  constructor(private compraService: CompraService, private router: Router) {}
+
+  goBack() {
+    this.router.navigate(['/tienda']);
+  }
 
   ngOnInit(): void {
     this.cargarCompras();
@@ -26,14 +30,13 @@ export class Reports implements OnInit {
 
   cargarCompras() {
     this.isLoading = true;
-    this.compraService.getTodasLasCompras().subscribe({
+    this.compraService.getMisCompras().subscribe({
       next: (data) => {
         this.compras = data;
-        this.totalVendido = data.reduce((acc, c) => acc + c.total, 0);
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error al cargar reportes', err);
+        console.error('Error fetching mis compras', err);
         this.isLoading = false;
       }
     });
@@ -54,7 +57,7 @@ export class Reports implements OnInit {
         },
         error: (err) => {
           console.error('Error al eliminar compra', err);
-          alert('Hubo un error al eliminar la compra.');
+          alert('Hubo un error al eliminar el historial.');
           this.isConfirmDeleteOpen = false;
           this.compraIdToDelete = null;
         }

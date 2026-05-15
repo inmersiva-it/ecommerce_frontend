@@ -1,0 +1,89 @@
+<div class="page-header">
+  <div class="header-row">
+    <div>
+      <h2><i class="ph ph-tag"></i> Gestión de Promociones</h2>
+      <p>Crea y administra los cupones de descuento para tus clientes.</p>
+    </div>
+    <button class="btn-new" (click)="showForm = !showForm">
+      <i class="ph" [class.ph-plus]="!showForm" [class.ph-x]="showForm"></i>
+      {{ showForm ? 'Cancelar' : 'Nuevo Cupón' }}
+    </button>
+  </div>
+</div>
+
+<!-- Formulario de nuevo cupón -->
+<div class="form-card" *ngIf="showForm">
+  <h3>Crear Nuevo Cupón</h3>
+  <div class="form-grid">
+    <div class="input-group">
+      <label>Código del Cupón</label>
+      <input type="text" [(ngModel)]="newPromocion.codigo" placeholder="Ej: VERANO25" class="form-input" />
+    </div>
+    <div class="input-group">
+      <label>Descuento (%)</label>
+      <input type="number" [(ngModel)]="newPromocion.porcentajeDescuento" min="1" max="100" class="form-input" />
+    </div>
+    <div class="input-group">
+      <label>Fecha de Vencimiento</label>
+      <input type="date" [(ngModel)]="newPromocion.fechaVencimiento" class="form-input" />
+    </div>
+    <div class="input-group input-group-check">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="newPromocion.activo" />
+        Activo al crear
+      </label>
+    </div>
+  </div>
+  <button class="btn-save" (click)="guardarPromocion()">
+    <i class="ph ph-floppy-disk"></i> Guardar Cupón
+  </button>
+</div>
+
+<div class="loading-state" *ngIf="isLoading">
+  <i class="ph ph-spinner ph-spin"></i> Cargando cupones...
+</div>
+
+<div class="table-container" *ngIf="!isLoading">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Descuento</th>
+        <th>Vencimiento</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let promo of promociones" [class.inactive-row]="!promo.activo">
+        <td><span class="code-badge">{{ promo.codigo }}</span></td>
+        <td><strong>{{ promo.porcentajeDescuento }}%</strong></td>
+        <td>{{ promo.fechaVencimiento }}</td>
+        <td>
+          <span class="status-pill" [class.active]="promo.activo" [class.blocked]="!promo.activo">
+            {{ promo.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+        <td class="actions-cell">
+          <button class="btn-toggle-mini" (click)="toggleEstado(promo.id!)" [title]="promo.activo ? 'Pausar' : 'Activar'">
+            <i class="ph" [class.ph-pause]="promo.activo" [class.ph-play]="!promo.activo"></i>
+          </button>
+          <button class="btn-delete-mini" (click)="openDeleteConfirmation(promo.id!)" title="Eliminar">
+            <i class="ph ph-trash"></i>
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="promociones.length === 0">
+        <td colspan="5" class="empty-row">No hay cupones creados aún.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<app-confirm-dialog
+  [isOpen]="isConfirmOpen"
+  title="Eliminar Cupón"
+  message="¿Estás seguro de que deseas eliminar este cupón? Los clientes ya no podrán usarlo."
+  (onConfirm)="confirmDelete()"
+  (onCancel)="isConfirmOpen = false">
+</app-confirm-dialog>
