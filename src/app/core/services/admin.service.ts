@@ -35,6 +35,10 @@ export class AdminService {
     return this.http.put<UsuarioDTO>(`${this.BASE}/usuarios/${id}/estado`, {});
   }
 
+  cambiarRolUsuario(id: number): Observable<UsuarioDTO> {
+    return this.http.put<UsuarioDTO>(`${this.BASE}/usuarios/${id}/rol`, {});
+  }
+
   // --- Promociones ---
   getPromociones(): Observable<PromocionDTO[]> {
     return this.http.get<PromocionDTO[]>(`${this.BASE}/promociones`);
