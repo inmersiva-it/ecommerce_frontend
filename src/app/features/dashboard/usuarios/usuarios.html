@@ -1,6 +1,11 @@
 <div class="page-header">
   <h2><i class="ph ph-users-three"></i> Gestión de Usuarios</h2>
-  <p>Administra el acceso de los clientes registrados en la plataforma.</p>
+  <p>Administra el acceso y roles de los usuarios registrados en la plataforma.</p>
+</div>
+
+<!-- Mensaje de error / restricción -->
+<div class="error-banner" *ngIf="errorMsg">
+  <i class="ph ph-warning-circle"></i> {{ errorMsg }}
 </div>
 
 <div class="loading-state" *ngIf="isLoading">
@@ -16,7 +21,7 @@
         <th>Email</th>
         <th>Rol</th>
         <th>Estado</th>
-        <th>Acción</th>
+        <th>Bloqueo</th>
       </tr>
     </thead>
     <tbody>
@@ -52,16 +57,26 @@
         </td>
       </tr>
       <tr *ngIf="usuarios.length === 0">
-        <td colspan="6" class="empty-row">No hay usuarios registrados.</td>
+        <td colspan="5" class="empty-row">No hay usuarios registrados.</td>
       </tr>
     </tbody>
   </table>
 </div>
 
+<!-- Dialog: Bloquear / Activar -->
 <app-confirm-dialog
-  [isOpen]="isConfirmOpen"
+  [isOpen]="isConfirmToggleOpen"
   title="Cambiar Estado de Usuario"
-  [message]="confirmMessage"
+  [message]="confirmToggleMessage"
   (onConfirm)="confirmToggle()"
-  (onCancel)="isConfirmOpen = false">
+  (onCancel)="isConfirmToggleOpen = false">
+</app-confirm-dialog>
+
+<!-- Dialog: Cambiar Rol -->
+<app-confirm-dialog
+  [isOpen]="isConfirmRolOpen"
+  title="Cambiar Rol de Usuario"
+  [message]="confirmRolMessage"
+  (onConfirm)="confirmCambioRol()"
+  (onCancel)="isConfirmRolOpen = false">
 </app-confirm-dialog>

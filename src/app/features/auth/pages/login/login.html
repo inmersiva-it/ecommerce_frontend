@@ -30,6 +30,12 @@
         <p class="subtitle">{{ isLoginMode ? 'Ingresa tus credenciales para acceder' : 'Regístrate para comprar los mejores componentes de PC' }}</p>
       </div>
 
+      <!-- Notificación en pantalla -->
+      <div class="login-notification" *ngIf="notification" [class.notif-error]="notification.type === 'error'" [class.notif-warning]="notification.type === 'warning'" [class.notif-success]="notification.type === 'success'">
+        <i class="ph" [class.ph-x-circle]="notification.type === 'error'" [class.ph-warning]="notification.type === 'warning'" [class.ph-check-circle]="notification.type === 'success'"></i>
+        <span>{{ notification.message }}</span>
+      </div>
+
       <div class="input-row" *ngIf="!isLoginMode">
         <div class="input-group">
           <label>Nombres</label>

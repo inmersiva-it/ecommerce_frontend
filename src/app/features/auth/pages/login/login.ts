@@ -20,10 +20,19 @@ export class LoginComponent {
   password: string = '';
   showPassword = false;
 
+  // Notificación en pantalla
+  notification: { message: string; type: 'error' | 'success' | 'warning' } | null = null;
+
   constructor(private auth: Auth, private router: Router) {}
+
+  showNotification(message: string, type: 'error' | 'success' | 'warning' = 'error') {
+    this.notification = { message, type };
+    setTimeout(() => this.notification = null, 5000);
+  }
 
   toggleMode() {
     this.isLoginMode = !this.isLoginMode;
+    this.notification = null;
   }
 
   togglePassword() {
@@ -31,6 +40,7 @@ export class LoginComponent {
   }
 
   login() {
+    this.notification = null;
     const data = { email: this.email, password: this.password };
     this.auth.login(data).subscribe({
       next: (res: any) => {
@@ -45,11 +55,16 @@ export class LoginComponent {
           this.router.navigate(['/tienda']);
         }
       },
-      error: (err) => alert('Error al iniciar sesión: ' + (err.error || 'Credenciales incorrectas'))
+      error: (err) => {
+        const msg = typeof err.error === 'string' ? err.error : 'Credenciales incorrectas';
+        const type = err.status === 403 ? 'warning' : 'error';
+        this.showNotification(msg, type);
+      }
     });
   }
 
   register() {
+    this.notification = null;
     const data = {
       nombres: this.firstName,
       apellidos: this.lastName,
@@ -69,11 +84,14 @@ export class LoginComponent {
           this.router.navigate(['/tienda']);
         }
       },
-      error: (err) => alert('Error al registrar: ' + (err.error || 'Datos inválidos'))
+      error: (err) => {
+        const msg = typeof err.error === 'string' ? err.error : 'Datos inválidos. Intenta de nuevo.';
+        this.showNotification(msg, 'error');
+      }
     });
   }
 
   socialLogin(provider: string) {
-    alert(`Iniciando sesión con ${provider} (Funcionalidad en desarrollo)`);
+    this.showNotification(`Inicio de sesión con ${provider} está en desarrollo.`, 'warning');
   }
 }

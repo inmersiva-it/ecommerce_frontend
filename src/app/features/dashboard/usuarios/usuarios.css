@@ -154,3 +154,39 @@
   padding: 40px !important;
   color: #94a3b8 !important;
 }
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.btn-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: #ede9fe;
+  color: #6d28d9;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-role:hover {
+  background: #6d28d9;
+  color: white;
+}
+
