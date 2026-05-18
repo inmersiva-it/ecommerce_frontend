@@ -76,7 +76,7 @@ export class UsuariosComponent implements OnInit {
   // --- Cambiar Rol ---
   openRolConfirmation(usuario: UsuarioDTO) {
     this.usuarioIdRol = usuario.id;
-    const nuevoRol = usuario.rol === 'ADMIN' ? 'CLIENTE' : 'ADMIN';
+    const nuevoRol = usuario.rol === 'Administrador' ? 'Cliente' : 'Administrador';
     this.confirmRolMessage = `¿Estás seguro de cambiar el rol de ${usuario.nombre} de ${usuario.rol} a ${nuevoRol}? Esto cambiará sus permisos en el sistema.`;
     this.isConfirmRolOpen = true;
   }
