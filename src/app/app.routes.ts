@@ -6,6 +6,7 @@ import { Inventory } from './features/inventory/inventory';
 import { Reports } from './features/reports/reports';
 import { CategoriaList } from './features/categorias/components/categoria-list/categoria-list';
 import { Configuracion } from './features/configuracion/configuracion';
+import { authGuard, adminGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -13,6 +14,7 @@ export const routes: Routes = [
   { 
     path: 'dashboard', 
     component: DashboardComponent,
+    canActivate: [adminGuard],
     children: [
       { path: 'inventory', component: Inventory },
       { path: 'reports', component: Reports },
@@ -26,11 +28,13 @@ export const routes: Routes = [
   },
   { 
     path: 'tienda', 
-    loadComponent: () => import('./features/store/pages/store/store').then(m => m.StoreComponent) 
+    loadComponent: () => import('./features/store/pages/store/store').then(m => m.StoreComponent),
+    canActivate: [authGuard]
   },
   {
     path: 'mis-compras',
-    loadComponent: () => import('./features/store/pages/mis-compras/mis-compras').then(m => m.MisComprasComponent)
+    loadComponent: () => import('./features/store/pages/mis-compras/mis-compras').then(m => m.MisComprasComponent),
+    canActivate: [authGuard]
   },
   { path: '', redirectTo: 'login', pathMatch: 'full' }
 ];

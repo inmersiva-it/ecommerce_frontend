@@ -19,4 +19,8 @@ export class CommonService {
   getBrands(): Observable<Marca[]> {
     return this.http.get<Marca[]>(this.brandUrl);
   }
+
+  createBrand(marca: Partial<Marca>): Observable<Marca> {
+    return this.http.post<Marca>(this.brandUrl, marca);
+  }
 }

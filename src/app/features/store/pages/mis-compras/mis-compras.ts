@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { CompraService, CompraDTO } from '../../../../core/services/compra.service';
+import { PedidoService, PedidoDTO } from '../../../../core/services/pedido.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog';
 
 @Component({
@@ -12,13 +12,13 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
   styleUrls: ['./mis-compras.css']
 })
 export class MisComprasComponent implements OnInit {
-  compras: CompraDTO[] = [];
+  compras: PedidoDTO[] = [];
   isLoading = true;
   
   isConfirmDeleteOpen = false;
   compraIdToDelete: number | null = null;
 
-  constructor(private compraService: CompraService, private router: Router) {}
+  constructor(private pedidoService: PedidoService, private router: Router) {}
 
   goBack() {
     this.router.navigate(['/tienda']);
@@ -30,7 +30,7 @@ export class MisComprasComponent implements OnInit {
 
   cargarCompras() {
     this.isLoading = true;
-    this.compraService.getMisCompras().subscribe({
+    this.pedidoService.getMisPedidos().subscribe({
       next: (data) => {
         this.compras = data;
         this.isLoading = false;
@@ -49,7 +49,7 @@ export class MisComprasComponent implements OnInit {
 
   confirmDelete() {
     if (this.compraIdToDelete !== null) {
-      this.compraService.deleteCompra(this.compraIdToDelete).subscribe({
+      this.pedidoService.eliminarPedido(this.compraIdToDelete).subscribe({
         next: () => {
           this.cargarCompras();
           this.isConfirmDeleteOpen = false;

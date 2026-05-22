@@ -25,7 +25,7 @@
     <div class="compra-card" *ngFor="let compra of compras">
       <div class="compra-header">
         <div class="compra-info">
-          <span class="compra-fecha"><i class="ph ph-calendar"></i> {{ compra.fecha | date:'short' }}</span>
+          <span class="compra-fecha"><i class="ph ph-calendar"></i> {{ compra.fechaPedido | date:'short' }}</span>
           <span class="compra-id">Pedido #{{ compra.id }}</span>
         </div>
         <div class="compra-total">
@@ -43,7 +43,7 @@
             {{ detalle.productoNombre }}
           </div>
           <div class="item-subtotal">
-            {{ detalle.subtotal | currency:'USD' }}
+            {{ (detalle.precioUnitario || 0) * detalle.cantidad | currency:'USD' }}
           </div>
         </div>
       </div>

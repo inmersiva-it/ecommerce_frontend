@@ -16,4 +16,7 @@ export interface Producto {
   stock: number;
   marca?: Marca;
   categoria?: Categoria;
+  imagenUrl?: string;
+  imagenes?: string[];
+  promedioCalificaciones?: number;
 }

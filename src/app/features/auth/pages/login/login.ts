@@ -56,7 +56,12 @@ export class LoginComponent {
         }
       },
       error: (err) => {
-        const msg = typeof err.error === 'string' ? err.error : 'Credenciales incorrectas';
+        let msg = 'Credenciales incorrectas';
+        if (err.status === 0) {
+          msg = 'No se pudo conectar con el servidor backend. Verifica que esté iniciado.';
+        } else if (typeof err.error === 'string') {
+          msg = err.error;
+        }
         const type = err.status === 403 ? 'warning' : 'error';
         this.showNotification(msg, type);
       }
@@ -85,7 +90,12 @@ export class LoginComponent {
         }
       },
       error: (err) => {
-        const msg = typeof err.error === 'string' ? err.error : 'Datos inválidos. Intenta de nuevo.';
+        let msg = 'Datos inválidos. Intenta de nuevo.';
+        if (err.status === 0) {
+          msg = 'No se pudo conectar con el servidor backend. Verifica que esté iniciado.';
+        } else if (typeof err.error === 'string') {
+          msg = err.error;
+        }
         this.showNotification(msg, 'error');
       }
     });

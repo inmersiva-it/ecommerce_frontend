@@ -39,6 +39,10 @@ export class AdminService {
     return this.http.put<UsuarioDTO>(`${this.BASE}/usuarios/${id}/rol`, {});
   }
 
+  eliminarUsuario(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.BASE}/usuarios/${id}`);
+  }
+
   // --- Promociones ---
   getPromociones(): Observable<PromocionDTO[]> {
     return this.http.get<PromocionDTO[]>(`${this.BASE}/promociones`);
