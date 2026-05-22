@@ -1,9 +1,19 @@
 <div class="store-layout">
-  <!-- Navbar inside Store for full control -->
+  <!-- Navbar inside Store for full control (Infordata style) -->
   <nav class="store-nav">
     <div class="nav-brand">
-      <i class="ph-bold ph-storefront"></i>
-      <span>PC Store</span>
+      <div class="logo-icon">
+        <div class="logo-lines"></div>
+      </div>
+      <span>PC STORE</span>
+    </div>
+
+    <!-- Menu Links -->
+    <div class="nav-links">
+      <a href="javascript:void(0)" class="nav-link">Configura tu PC</a>
+      <a href="javascript:void(0)" class="nav-link">Compra tu Equipo</a>
+      <a href="javascript:void(0)" class="nav-link">Productos</a>
+      <a href="javascript:void(0)" class="nav-link">BLOG</a>
     </div>
 
     <div class="nav-search">
@@ -14,15 +24,22 @@
     </div>
 
     <div class="nav-actions">
+      <!-- Cart trigger -->
       <div class="cart-trigger" (click)="toggleCart()">
         <i class="ph ph-shopping-cart"></i>
         <span class="cart-badge" *ngIf="cartService.getItemCount() > 0">
           {{ cartService.getItemCount() }}
         </span>
       </div>
+
+      <!-- User trigger -->
       <div class="user-profile-container">
         <div class="user-trigger" (click)="toggleUserMenu($event)">
-          <i class="ph ph-user-circle"></i>
+          <i class="ph ph-user"></i>
+          <span class="user-trigger-text">
+            <span class="hello-text">Hola,</span>
+            <span class="action-text">{{ currentUser ? currentUser.firstName : 'Iniciar sesión' }}</span>
+          </span>
         </div>
 
         <!-- User Dropdown Menu -->
@@ -47,49 +64,111 @@
   </nav>
 
   <div class="store-container">
-    <!-- Sidebar Categories -->
+    <!-- Sidebar Categories (Infordata style) -->
     <aside class="sidebar">
-      <h3 class="sidebar-title">Categorías</h3>
-      <ul class="category-list">
-        <li [class.active]="selectedCategoryId === null" (click)="selectCategory(null)">
-          <i class="ph ph-squares-four"></i>
-          <span>Todas</span>
-        </li>
-        <li *ngFor="let cat of categories" [class.active]="selectedCategoryId === cat.id"
-          (click)="selectCategory(cat.id || null)">
-          <i class="ph ph-tag"></i>
-          <span>{{ cat.nombre }}</span>
-        </li>
-      </ul>
+      <div class="sidebar-filter-box">
+        <div class="filter-header">
+          <span class="filter-title">Categorías</span>
+          <i class="ph ph-minus"></i>
+        </div>
+        <ul class="category-list">
+          <li [class.active]="selectedCategoryId === null" (click)="selectCategory(null)">
+            <span class="filter-check-dot"></span>
+            <span>Todas</span>
+          </li>
+          <li *ngFor="let cat of categories" [class.active]="selectedCategoryId === cat.id"
+            (click)="selectCategory(cat.id || null)">
+            <span class="filter-check-dot"></span>
+            <span>{{ cat.nombre }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <button class="btn-clear-filters" (click)="selectCategory(null)">
+        Limpiar
+      </button>
     </aside>
 
     <!-- Main Content Grid -->
     <main class="product-grid-container">
+      <!-- Hero Banner inside Catalog -->
+      <div class="store-hero-banner" *ngIf="!selectedCategoryId">
+        <div class="hero-content">
+          <span class="hero-tag">TECNOLOGÍA PREMIUM</span>
+          <h1>Tu Próximo Setup de PC</h1>
+          <p>Adquiere componentes de hardware de alta calidad con garantía autorizada y entrega inmediata a nivel nacional.</p>
+          <div class="hero-features">
+            <div class="hero-feature">
+              <i class="ph-bold ph-shield-check"></i>
+              <span>Hardware Oficial</span>
+            </div>
+            <div class="hero-feature">
+              <i class="ph-bold ph-truck"></i>
+              <span>Envíos a todo el Perú</span>
+            </div>
+            <div class="hero-feature">
+              <i class="ph-bold ph-credit-card"></i>
+              <span>Pago 100% Seguro</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-graphic">
+          <i class="ph-bold ph-cpu"></i>
+        </div>
+      </div>
+
+      <!-- Grid Header (Infordata style) -->
       <header class="grid-header">
-        <h2>{{ selectedCategoryId ? 'Resultados' : 'Todos los Productos' }}</h2>
-        <p>{{ filteredProducts.length }} productos disponibles</p>
+        <div class="header-info">
+          <h2>{{ selectedCategoryId ? 'Resultados de Búsqueda' : 'Todos los Productos' }}</h2>
+          <p>Mostrando todos los {{ filteredProducts.length }} resultados</p>
+        </div>
+        <div class="header-sort">
+          <label for="sort-select">Ordenar por precio:</label>
+          <div class="sort-select-wrapper">
+            <select id="sort-select" [(ngModel)]="sortOption" class="sort-select">
+              <option value="popular">Lo más popular</option>
+              <option value="price_asc">De menor a mayor</option>
+              <option value="price_desc">De mayor a menor</option>
+            </select>
+            <i class="ph ph-caret-down sort-caret"></i>
+          </div>
+        </div>
       </header>
 
+      <!-- Product Cards Grid (Infordata style) -->
       <div class="product-grid">
-        <div class="product-card" *ngFor="let product of filteredProducts">
-          <div class="card-image">
-            <img src="https://placehold.co/400x300?text={{product.nombre}}" alt="Product">
-            <span class="category-pill">{{ product.categoria?.nombre }}</span>
+        <div class="product-card" *ngFor="let product of filteredProducts" (click)="openProductDetail(product)">
+          <div class="card-badges">
+            <span class="badge-tech">{{ product.categoria?.nombre }}</span>
+            <span class="badge-warranty" *ngIf="product.stock > 0">Garantía</span>
           </div>
+
+          <div class="card-image">
+            <img [src]="getProductImage(product)" alt="{{product.nombre}}" [class.placeholder-img]="!hasImage(product)">
+          </div>
+
           <div class="card-body">
-            <div class="card-brand">{{ product.marca?.nombre }}</div>
-            <h4 class="card-title">{{ product.nombre }}</h4>
+            <div class="card-brand-row">
+              <span class="card-brand">{{ product.marca?.nombre }}</span>
+              <div class="card-rating" *ngIf="product.promedioCalificaciones && product.promedioCalificaciones > 0">
+                <i class="ph-fill ph-star"></i>
+                <span>{{ product.promedioCalificaciones | number:'1.1-1' }}</span>
+              </div>
+            </div>
+
+            <h4 class="card-title" [title]="product.nombre">{{ product.nombre }}</h4>
+
+            <div class="card-tax-info">Incluye IGV</div>
             <div class="card-price">{{ product.precio | currency:'USD' }}</div>
 
-            <div class="card-footer">
-              <div class="stock-info" [class.out-of-stock]="product.stock === 0">
-                <i class="ph" [ngClass]="product.stock === 0 ? 'ph-prohibit' : 'ph-check-circle'"></i>
-                <span>{{ product.stock === 0 ? 'Agotado' : product.stock + ' disponibles' }}</span>
-              </div>
-              <button class="btn-add" [disabled]="product.stock === 0" (click)="addToCart(product)">
-                <i class="ph ph-shopping-cart-simple"></i>
-                <span>{{ product.stock === 0 ? 'Sin Stock' : 'Añadir' }}</span>
-              </button>
+            <button class="btn-buy-now" [disabled]="product.stock === 0" (click)="$event.stopPropagation(); addToCart(product)">
+              {{ product.stock === 0 ? 'Sin Stock' : 'Comprar ahora' }}
+            </button>
+
+            <div class="delivery-warning-box">
+              <i class="ph ph-clock"></i>
+              <span>Tiempo de entrega es de 3 días laborales después de la confirmación de la compra.</span>
             </div>
           </div>
         </div>
@@ -100,6 +179,187 @@
         <p>No hay productos en esta categoría</p>
       </div>
     </main>
+  </div>
+</div>
+
+<!-- Product Detail Modal Overlay -->
+<div class="detail-modal-overlay" *ngIf="selectedProduct" (click)="closeProductDetail()">
+  <div class="detail-modal-card" (click)="$event.stopPropagation()">
+    <button class="modal-close-btn" (click)="closeProductDetail()">&times;</button>
+    
+    <div class="detail-modal-body">
+      <div class="detail-grid">
+        <!-- Gallery Section -->
+        <div class="detail-gallery">
+          <div class="main-image-wrapper">
+            <img [src]="resolveImageUrl(selectedProduct.imagenes && selectedProduct.imagenes.length > 0 ? selectedProduct.imagenes[activeImageIndex] : selectedProduct.imagenUrl)" 
+                 alt="{{selectedProduct.nombre}}" 
+                 [class.placeholder-img]="!hasImage(selectedProduct)">
+          </div>
+          
+          <!-- Thumbnails Row for Multiple Images -->
+          <div class="thumbnails-row" *ngIf="selectedProduct.imagenes && selectedProduct.imagenes.length > 1">
+            <div *ngFor="let img of selectedProduct.imagenes; let idx = index" 
+                 class="thumb-item" 
+                 [class.active]="idx === activeImageIndex"
+                 (click)="selectImageIndex(idx)">
+              <img [src]="resolveImageUrl(img)" alt="Thumbnail {{idx + 1}}">
+            </div>
+          </div>
+        </div>
+
+        <!-- Info & Reviews Section -->
+        <div class="detail-info-pane">
+          <div class="detail-meta">
+            <span class="brand-tag">{{ selectedProduct.marca?.nombre }}</span>
+            <span class="category-tag">{{ selectedProduct.categoria?.nombre }}</span>
+          </div>
+          
+          <h2 class="detail-title">{{ selectedProduct.nombre }}</h2>
+          
+          <!-- Rating Summary -->
+          <div class="detail-rating-summary">
+            <div class="rating-stars">
+              <i *ngFor="let star of [1,2,3,4,5]" 
+                 class="ph-star"
+                 [class.ph-fill]="star <= (selectedProduct.promedioCalificaciones || 0)"
+                 [class.ph]="star > (selectedProduct.promedioCalificaciones || 0)"
+                 [class.star-filled]="star <= (selectedProduct.promedioCalificaciones || 0)"></i>
+            </div>
+            <span class="rating-score">{{ (selectedProduct.promedioCalificaciones || 0) | number:'1.1-1' }} / 5.0</span>
+            <span class="reviews-count">({{ reviews.length }} {{ reviews.length === 1 ? 'reseña' : 'reseñas' }})</span>
+          </div>
+
+          <div class="detail-price-row">
+            <span class="detail-price">{{ selectedProduct.precio | currency:'USD' }}</span>
+            <span class="detail-stock-badge" [class.out-of-stock]="selectedProduct.stock === 0">
+              <i class="ph" [ngClass]="selectedProduct.stock === 0 ? 'ph-prohibit' : 'ph-check-circle'"></i>
+              {{ selectedProduct.stock === 0 ? 'Agotado' : selectedProduct.stock + ' disponibles' }}
+            </span>
+          </div>
+
+          <div class="detail-description">
+            <h3>Descripción</h3>
+            <p>{{ selectedProduct.descripcion }}</p>
+          </div>
+
+          <!-- Technical Specifications (inspired by Infordata) -->
+          <div class="detail-specs">
+            <h3>Especificaciones Técnicas</h3>
+            <div class="specs-table">
+              <div class="spec-row">
+                <div class="spec-label">Categoría</div>
+                <div class="spec-value">{{ selectedProduct.categoria?.nombre || 'General' }}</div>
+              </div>
+              <div class="spec-row">
+                <div class="spec-label">Marca</div>
+                <div class="spec-value">{{ selectedProduct.marca?.nombre || 'Genérico' }}</div>
+              </div>
+              <div class="spec-row">
+                <div class="spec-label">Precio Unidad</div>
+                <div class="spec-value">{{ selectedProduct.precio | currency:'USD' }}</div>
+              </div>
+              <div class="spec-row">
+                <div class="spec-label">Disponibilidad</div>
+                <div class="spec-value">
+                  <span [class.text-success]="selectedProduct.stock > 0" [class.text-danger]="selectedProduct.stock === 0">
+                    {{ selectedProduct.stock > 0 ? selectedProduct.stock + ' unidades en stock' : 'Sin stock' }}
+                  </span>
+                </div>
+              </div>
+              <div class="spec-row" *ngIf="selectedProduct.promedioCalificaciones && selectedProduct.promedioCalificaciones > 0">
+                <div class="spec-label">Calificación</div>
+                <div class="spec-value">
+                  <i class="ph-fill ph-star text-warning"></i>
+                  {{ selectedProduct.promedioCalificaciones | number:'1.1-1' }} / 5.0
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-actions" *ngIf="selectedProduct.stock > 0">
+            <button class="btn-detail-add" (click)="addToCart(selectedProduct)">
+              <i class="ph ph-shopping-cart-simple"></i>
+              <span>Añadir al Carrito</span>
+            </button>
+          </div>
+
+          <hr class="detail-divider">
+
+          <!-- Reviews Section -->
+          <div class="reviews-section">
+            <h3>Opiniones de Clientes</h3>
+            
+            <div class="reviews-list">
+              <div class="empty-reviews" *ngIf="reviews.length === 0">
+                <i class="ph ph-chat-centered-text"></i>
+                <p>Aún no hay opiniones para este producto. ¡Sé el primero en calificarlo!</p>
+              </div>
+              
+              <div class="review-card" *ngFor="let rev of reviews">
+                <div class="review-header">
+                  <div class="reviewer-info">
+                    <span class="reviewer-name">{{ rev.usuarioNombre || 'Usuario Anónimo' }}</span>
+                    <span class="reviewer-email">{{ rev.usuarioEmail }}</span>
+                  </div>
+                  <span class="review-date">{{ rev.fechaResena | date:'dd/MM/yyyy, h:mm a' }}</span>
+                </div>
+                
+                <div class="review-rating">
+                  <i *ngFor="let star of [1,2,3,4,5]" 
+                     class="ph-fill ph-star"
+                     [class.star-filled]="star <= rev.calificacion"
+                     [class.star-empty]="star > rev.calificacion"></i>
+                </div>
+                
+                <p class="review-comment">{{ rev.comentario }}</p>
+              </div>
+            </div>
+
+            <!-- Write a Review Form -->
+            <div class="write-review-container">
+              <h4>Escribir una opinión</h4>
+              
+              <div *ngIf="currentUser; else loginRequired">
+                <div class="rating-input-row">
+                  <span>Calificación:</span>
+                  <div class="star-selector">
+                    <i *ngFor="let star of [1,2,3,4,5]" 
+                       class="ph-star"
+                       [class.ph-fill]="star <= newRating"
+                       [class.ph]="star > newRating"
+                       [class.selected]="star <= newRating"
+                       (click)="newRating = star"></i>
+                  </div>
+                </div>
+                
+                <div class="comment-input-group">
+                  <textarea [(ngModel)]="newComment" 
+                            placeholder="Escribe tu opinión sobre este producto..." 
+                            rows="3" 
+                            class="review-textarea"></textarea>
+                </div>
+                
+                <button class="btn-submit-review" 
+                        [disabled]="submittingReview || !newComment.trim()"
+                        (click)="submitReview()">
+                  <i class="ph ph-paper-plane" *ngIf="!submittingReview"></i>
+                  <span *ngIf="submittingReview">Publicando...</span>
+                  <span *ngIf="!submittingReview">Publicar Opinión</span>
+                </button>
+              </div>
+              
+              <ng-template #loginRequired>
+                <div class="login-required-msg">
+                  <i class="ph ph-lock"></i>
+                  <span>Inicie sesión con su cuenta para dejar una reseña sobre este producto.</span>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

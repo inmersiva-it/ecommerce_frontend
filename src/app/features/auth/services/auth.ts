@@ -8,7 +8,49 @@ export class Auth {
 
   private API = 'http://localhost:8080/auth';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.startTokenExpiryCheck();
+  }
+
+  private decodeToken(token: string): any {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      const base64Url = parts[1];
+      let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      while (base64.length % 4) {
+        base64 += '=';
+      }
+      const jsonPayload = decodeURIComponent(
+        window.atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  public isTokenExpired(token: string | null): boolean {
+    if (!token) return true;
+    const decoded = this.decodeToken(token);
+    if (!decoded || !decoded.exp) return true;
+    const expirationDate = decoded.exp * 1000;
+    return Date.now() >= expirationDate;
+  }
+
+  private startTokenExpiryCheck() {
+    // Verificar cada 5 segundos si el token ha expirado
+    setInterval(() => {
+      const token = localStorage.getItem('token');
+      if (token && this.isTokenExpired(token)) {
+        console.warn('El token ha expirado. Cerrando sesión automáticamente...');
+        this.logout();
+      }
+    }, 5000);
+  }
 
   login(data: any) {
     return this.http.post(`${this.API}/login`, data);

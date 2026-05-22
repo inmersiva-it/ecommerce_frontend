@@ -1,6 +1,8 @@
 <div class="page-header">
-  <h2><i class="ph ph-users-three"></i> Gestión de Usuarios</h2>
-  <p>Administra el acceso y roles de los usuarios registrados en la plataforma.</p>
+  <div class="title-group">
+    <h2><i class="ph ph-users-three"></i> Gestión de Usuarios</h2>
+    <p>Administra el acceso, roles y cuentas de los usuarios registrados en la plataforma.</p>
+  </div>
 </div>
 
 <!-- Mensaje de error / restricción -->
@@ -12,52 +14,112 @@
   <i class="ph ph-spinner ph-spin"></i> Cargando usuarios...
 </div>
 
-<div class="table-container" *ngIf="!isLoading">
-  <table class="data-table">
+<div class="table-card" *ngIf="!isLoading">
+  <table class="modern-table">
     <thead>
       <tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Email</th>
-        <th>Rol</th>
-        <th>Estado</th>
-        <th>Bloqueo</th>
+        <th *ngFor="let col of columns; let i = index"
+            [draggable]="!col.noDrag && !isFilterInputFocused"
+            (dragstart)="onDragStart(i)"
+            (dragover)="onDragOver($event, i)"
+            (drop)="onDrop($event, i)"
+            (dragend)="onDragEnd()"
+            [class.dragging]="draggedColumnIndex === i"
+            [class.drop-target]="dragOverIndex === i"
+            [class.text-center]="col.key === 'acciones'"
+            [ngClass]="'col-' + col.key">
+          
+          <div class="header-content">
+            <span class="header-label">{{ col.label }}</span>
+            
+            <i *ngIf="!col.noFilter"
+               class="ph filter-icon" 
+               [ngClass]="col.filter ? 'ph-funnel-fill' : 'ph-funnel'"
+               [class.active]="col.filter || col.showFilter"
+               (click)="toggleFilter(col); $event.stopPropagation()"></i>
+
+            <!-- Absolute positioned filter popover -->
+            <div class="filter-popover" 
+                 *ngIf="col.showFilter" 
+                 (click)="$event.stopPropagation()">
+              <input type="text" 
+                     class="filter-popover-input" 
+                     [(ngModel)]="col.filter"
+                     (keyup)="applyFilter()"
+                     (focus)="isFilterInputFocused = true"
+                     (blur)="isFilterInputFocused = false"
+                     placeholder="Buscar..."
+                     (keydown.enter)="col.showFilter = false"
+                     (keydown.escape)="col.showFilter = false">
+              <button class="clear-filter-btn" *ngIf="col.filter" (click)="col.filter = ''; applyFilter(); col.showFilter = false">
+                <i class="ph ph-x"></i>
+              </button>
+            </div>
+          </div>
+        </th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let usuario of usuarios" [class.inactive-row]="!usuario.activo">
-        <td>#{{ usuario.id }}</td>
-        <td>
-          <div class="user-cell">
-            <div class="avatar">{{ usuario.nombre.charAt(0).toUpperCase() }}</div>
-            <strong>{{ usuario.nombre }}</strong>
-          </div>
-        </td>
-        <td>{{ usuario.email }}</td>
-        <td>
-          <span class="badge" [class.badge-admin]="usuario.rol === 'Administrador'" [class.badge-cliente]="usuario.rol !== 'Administrador'">
-            {{ usuario.rol }}
-          </span>
-        </td>
-        <td>
-          <span class="status-pill" [class.active]="usuario.activo" [class.blocked]="!usuario.activo">
-            <i class="ph" [class.ph-check-circle]="usuario.activo" [class.ph-x-circle]="!usuario.activo"></i>
-            {{ usuario.activo ? 'Activo' : 'Bloqueado' }}
-          </span>
-        </td>
-        <td>
-          <button
-            class="btn-toggle"
-            [class.btn-block]="usuario.activo"
-            [class.btn-unblock]="!usuario.activo"
-            (click)="openToggleConfirmation(usuario)">
-            <i class="ph" [class.ph-lock]="usuario.activo" [class.ph-lock-open]="!usuario.activo"></i>
-            {{ usuario.activo ? 'Bloquear' : 'Activar' }}
-          </button>
-        </td>
+      <tr *ngFor="let usuario of filteredUsuarios" class="table-row" [class.inactive-row]="!usuario.activo">
+        <ng-container *ngFor="let col of columns">
+          <td [ngSwitch]="col.key" 
+              [class.text-center]="col.key === 'acciones'" 
+              [ngClass]="'col-' + col.key">
+            
+            <!-- ID Column -->
+            <span *ngSwitchCase="'id'" class="id-badge">#{{ usuario.id }}</span>
+            
+            <!-- Nombre Column -->
+            <div *ngSwitchCase="'nombre'" class="user-cell">
+              <div class="avatar">{{ usuario.nombre.charAt(0).toUpperCase() }}</div>
+              <strong>{{ usuario.nombre }}</strong>
+            </div>
+            
+            <!-- Email Column -->
+            <span *ngSwitchCase="'email'" class="user-email">{{ usuario.email }}</span>
+            
+            <!-- Rol Column -->
+            <span *ngSwitchCase="'rol'" class="badge" [class.badge-admin]="usuario.rol === 'Administrador'" [class.badge-cliente]="usuario.rol !== 'Administrador'">
+              {{ usuario.rol }}
+            </span>
+            
+            <!-- Estado Column -->
+            <span *ngSwitchCase="'activo'" class="status-pill" [class.active]="usuario.activo" [class.blocked]="!usuario.activo">
+              <i class="ph" [class.ph-check-circle]="usuario.activo" [class.ph-x-circle]="!usuario.activo"></i>
+              {{ usuario.activo ? 'Activo' : 'Bloqueado' }}
+            </span>
+            
+            <!-- Acciones Column -->
+            <div *ngSwitchCase="'acciones'" class="actions-cell">
+              <button class="action-btn toggle-lock" 
+                      [class.locked]="!usuario.activo"
+                      (click)="openToggleConfirmation(usuario)" 
+                      [title]="usuario.activo ? 'Bloquear Usuario' : 'Activar Usuario'">
+                <i class="ph" [class.ph-lock]="usuario.activo" [class.ph-lock-open]="!usuario.activo"></i>
+              </button>
+              <button class="action-btn role-change" 
+                      (click)="openRolConfirmation(usuario)" 
+                      title="Cambiar Rol">
+                <i class="ph ph-user-gear"></i>
+              </button>
+              <button class="action-btn delete" 
+                      (click)="openDeleteConfirmation(usuario)" 
+                      title="Eliminar Cuenta">
+                <i class="ph ph-trash"></i>
+              </button>
+            </div>
+            
+            <!-- Default Column -->
+            <span *ngSwitchDefault>{{ getNestedValue(usuario, col.key) }}</span>
+            
+          </td>
+        </ng-container>
       </tr>
-      <tr *ngIf="usuarios.length === 0">
-        <td colspan="5" class="empty-row">No hay usuarios registrados.</td>
+      <tr *ngIf="filteredUsuarios.length === 0">
+        <td [attr.colspan]="columns.length" class="empty-state">
+          <i class="ph ph-users-three"></i>
+          <p>No se encontraron usuarios registrados o que coincidan con la búsqueda.</p>
+        </td>
       </tr>
     </tbody>
   </table>
@@ -79,4 +141,13 @@
   [message]="confirmRolMessage"
   (onConfirm)="confirmCambioRol()"
   (onCancel)="isConfirmRolOpen = false">
+</app-confirm-dialog>
+
+<!-- Dialog: Eliminar Usuario -->
+<app-confirm-dialog
+  [isOpen]="isConfirmDeleteOpen"
+  title="Eliminar Cuenta de Usuario"
+  [message]="confirmDeleteMessage"
+  (onConfirm)="confirmDelete()"
+  (onCancel)="isConfirmDeleteOpen = false">
 </app-confirm-dialog>

@@ -12,34 +12,6 @@
   gap: 16px;
 }
 
-.actions-group {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.filter-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  padding: 8px 16px;
-  border-radius: 10px;
-  color: #64748b;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.filter-select {
-  border: none;
-  outline: none;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #1e293b;
-  background: transparent;
-  cursor: pointer;
-}
-
 .title-group h1 {
   margin: 0;
   font-size: 1.8rem;
@@ -76,10 +48,10 @@
 
 .table-card {
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   border: 1px solid #e2e8f0;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.04), 0 4px 6px -2px rgba(0,0,0,0.02);
 }
 
 .modern-table {
@@ -90,97 +62,154 @@
 
 .modern-table th {
   background-color: #f8fafc;
-  padding: 16px 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #64748b;
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.modern-table td {
-  padding: 16px 20px;
-  vertical-align: middle;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.table-row {
+  border-bottom: 2px solid #e2e8f0;
+  position: relative;
+  cursor: grab;
+  user-select: none;
   transition: background-color 0.2s;
 }
 
+.modern-table th:active {
+  cursor: grabbing;
+}
+
+.modern-table th.dragging {
+  opacity: 0.4;
+  background-color: #e2e8f0;
+}
+
+.modern-table th.drop-target {
+  border-left: 3px solid #195ff5;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.header-label {
+  flex-grow: 0;
+  white-space: nowrap;
+}
+
+.filter-icon {
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #94a3b8;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.filter-icon:hover, .filter-icon.active {
+  color: #195ff5;
+  transform: scale(1.15);
+}
+
+.filter-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 180px;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 4px 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+}
+
+.filter-popover:focus-within {
+  border-color: #195ff5;
+  box-shadow: 0 0 0 3px rgba(25, 95, 245, 0.15);
+}
+
+.filter-popover-input {
+  flex: 1;
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 0.8rem;
+  padding: 4px 0;
+  font-weight: normal;
+  text-transform: none;
+  background: transparent;
+  color: #1e293b;
+}
+
+.clear-filter-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.clear-filter-btn:hover {
+  background-color: #f1f5f9;
+  color: #e11d48;
+}
+
+.modern-table td {
+  padding: 10px 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  font-size: 0.86rem;
+}
+
+.table-row {
+  transition: background-color 0.2s ease;
+}
+
 .table-row:hover {
-  background-color: #f8fafc;
+  background-color: rgba(25, 95, 245, 0.015);
 }
 
 .id-badge {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
-  color: #94a3b8;
-  font-weight: 500;
-}
-
-.product-name-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  font-size: 0.78rem;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
 }
 
 .product-name {
   font-weight: 600;
   color: #1e293b;
-  font-size: 1rem;
-}
-
-.product-desc {
-  font-size: 0.85rem;
-  color: #64748b;
-  max-width: 300px;
+  font-size: 0.88rem;
+  line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.category-tag {
-  background-color: #f1f5f9;
-  color: #475569;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.price-text {
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.stock-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background-color: #f0fdf4;
-  color: #166534;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.stock-badge.low-stock {
-  background-color: #fef2f2;
-  color: #991b1b;
-}
-
-.stock-badge small {
-  font-weight: 500;
-  opacity: 0.8;
+  max-width: 100%;
 }
 
 .actions-cell {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
+  align-items: center;
 }
 
 .action-btn {
@@ -189,24 +218,63 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background: white;
-  color: #64748b;
+  border-radius: 10px;
+  border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.action-btn i {
+  font-size: 1.15rem;
+  transition: transform 0.2s ease;
+}
+
+.action-btn.edit {
+  background-color: #eff6ff;
+  color: #195ff5;
 }
 
 .action-btn.edit:hover {
-  color: #0f172a;
-  background-color: #f1f5f9;
-  border-color: #0f172a;
+  background-color: #195ff5;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(25, 95, 245, 0.2);
+}
+
+.action-btn.edit:hover i {
+  transform: rotate(-10deg);
+}
+
+.action-btn.delete {
+  background-color: #fff1f2;
+  color: #e11d48;
 }
 
 .action-btn.delete:hover {
-  color: #ef4444;
-  background-color: #fef2f2;
-  border-color: #ef4444;
+  background-color: #e11d48;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(225, 29, 72, 0.2);
+}
+
+.action-btn.delete:hover i {
+  transform: scale(1.1);
+}
+
+/* Dynamic Column Width constraints */
+.col-id {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.col-nombre {
+  width: auto;
+}
+
+.col-acciones {
+  width: 1%;
+  white-space: nowrap;
 }
 
 .empty-state {

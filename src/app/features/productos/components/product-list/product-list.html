@@ -1,17 +1,11 @@
 <div class="product-list-container">
+  <!-- Header Title Section -->
   <div class="header-section">
     <div class="title-group">
       <h1>Gestión de Productos</h1>
       <p>Administra el inventario de tecnología de tu tienda</p>
     </div>
     <div class="actions-group">
-      <div class="filter-wrapper">
-        <i class="ph ph-funnel"></i>
-        <select [(ngModel)]="selectedCategoryId" (change)="applyFilter()" class="filter-select">
-          <option value="">Todas las Categorías</option>
-          <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.nombre }}</option>
-        </select>
-      </div>
       <button class="btn-primary" (click)="openCreateForm()">
         <i class="ph ph-plus"></i>
         <span>Nuevo Producto</span>
@@ -19,36 +13,99 @@
     </div>
   </div>
 
+  <!-- Advanced Filters Bar -->
+  <div class="filter-bar-card">
+    <div class="search-input-wrapper">
+      <i class="ph ph-magnifying-glass search-icon"></i>
+      <input type="text" 
+             [(ngModel)]="searchQuery" 
+             (input)="applyFilter()" 
+             placeholder="Buscar por nombre, descripción, marca o categoría..." 
+             class="search-input">
+      <button *ngIf="searchQuery" class="clear-search-btn" (click)="searchQuery = ''; applyFilter()">
+        <i class="ph ph-x"></i>
+      </button>
+    </div>
+    
+    <div class="filter-dropdowns-group">
+      <div class="filter-select-wrapper">
+        <i class="ph ph-tag filter-select-icon"></i>
+        <select [(ngModel)]="selectedCategoryId" (change)="applyFilter()" class="filter-select-ui">
+          <option value="">Todas las Categorías</option>
+          <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="filter-select-wrapper">
+        <i class="ph ph-copyright filter-select-icon"></i>
+        <select [(ngModel)]="selectedBrandId" (change)="applyFilter()" class="filter-select-ui">
+          <option value="">Todas las Marcas</option>
+          <option *ngFor="let brand of brands" [value]="brand.id">{{ brand.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="filter-select-wrapper">
+        <i class="ph ph-chart-bar filter-select-icon"></i>
+        <select [(ngModel)]="selectedStockStatus" (change)="applyFilter()" class="filter-select-ui">
+          <option value="">Cualquier Stock</option>
+          <option value="ok">Con stock (>= 10)</option>
+          <option value="low">Bajo stock (< 10)</option>
+          <option value="out">Sin stock (0)</option>
+        </select>
+      </div>
+
+      <button class="btn-secondary" 
+              (click)="clearAllFilters()" 
+              *ngIf="hasActiveFilters()"
+              title="Limpiar Filtros">
+        <i class="ph ph-arrows-counter-clockwise"></i>
+        <span>Limpiar</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Table Section -->
   <div class="table-card">
     <table class="modern-table">
       <thead>
         <tr>
           <th *ngFor="let col of columns; let i = index"
-              [draggable]="!col.noDrag"
+              [draggable]="!col.noDrag && !isFilterInputFocused"
               (dragstart)="onDragStart(i)"
               (dragover)="onDragOver($event, i)"
               (drop)="onDrop($event, i)"
               (dragend)="onDragEnd()"
               [class.dragging]="draggedColumnIndex === i"
               [class.drop-target]="dragOverIndex === i"
-              [class.text-center]="col.key === 'acciones'">
+              [class.text-center]="col.key === 'acciones'"
+              [ngClass]="'col-' + col.key">
             
             <div class="header-content">
               <span class="header-label">{{ col.label }}</span>
               
-              <div class="column-filter" *ngIf="!col.noFilter">
+              <i *ngIf="!col.noFilter"
+                 class="ph filter-icon" 
+                 [ngClass]="col.filter ? 'ph-funnel-fill' : 'ph-funnel'"
+                 [class.active]="col.filter || col.showFilter"
+                 (click)="toggleFilter(col); $event.stopPropagation()"></i>
+
+              <!-- Absolute positioned filter popover -->
+              <div class="filter-popover" 
+                   [class.align-right]="col.key === 'stock' || col.key === 'precio'"
+                   *ngIf="col.showFilter" 
+                   (click)="$event.stopPropagation()">
                 <input type="text" 
-                       class="filter-input-small" 
-                       [class.visible]="col.showFilter"
+                       class="filter-popover-input" 
                        [(ngModel)]="col.filter"
                        (keyup)="applyFilter()"
+                       (focus)="isFilterInputFocused = true"
+                       (blur)="isFilterInputFocused = false"
                        placeholder="Buscar..."
-                       (click)="$event.stopPropagation()">
-                <i class="ph" 
-                   [ngClass]="col.showFilter ? 'ph-x' : 'ph-magnifying-glass'"
-                   class="filter-icon"
-                   [class.active]="col.filter"
-                   (click)="toggleFilter(col); $event.stopPropagation()"></i>
+                       (keydown.enter)="col.showFilter = false"
+                       (keydown.escape)="col.showFilter = false">
+                <button class="clear-filter-btn" *ngIf="col.filter" (click)="col.filter = ''; applyFilter(); col.showFilter = false">
+                  <i class="ph ph-x"></i>
+                </button>
               </div>
             </div>
           </th>
@@ -57,7 +114,10 @@
       <tbody>
         <tr *ngFor="let product of filteredProducts" class="table-row">
           <ng-container *ngFor="let col of columns">
-            <td [ngSwitch]="col.key" [class.text-center]="col.key === 'acciones'" [class.actions-cell]="col.key === 'acciones'">
+            <td [ngSwitch]="col.key" 
+                [class.text-center]="col.key === 'acciones'" 
+                [class.actions-cell-wrapper]="col.key === 'acciones'"
+                [ngClass]="'col-' + col.key">
               
               <!-- ID Column -->
               <span *ngSwitchCase="'id'" class="id-badge">#{{ product.id }}</span>
@@ -65,11 +125,17 @@
               <!-- Nombre Column -->
               <div *ngSwitchCase="'nombre'" class="product-name-cell">
                 <span class="product-name">{{ product.nombre }}</span>
-                <span class="product-desc">{{ product.descripcion }}</span>
+                <span class="product-desc" [title]="product.descripcion">{{ product.descripcion }}</span>
               </div>
               
               <!-- Categoria Column -->
               <span *ngSwitchCase="'categoria'" class="category-tag">{{ product.categoria?.nombre }}</span>
+
+              <!-- Marca Column -->
+              <span *ngSwitchCase="'marca'" class="brand-tag">
+                <i class="ph ph-copyright brand-tag-icon"></i>
+                {{ product.marca?.nombre }}
+              </span>
               
               <!-- Precio Column -->
               <span *ngSwitchCase="'precio'" class="price-text">{{ product.precio | currency:'USD':'symbol':'1.2-2' }}</span>
@@ -83,10 +149,10 @@
               
               <!-- Acciones Column -->
               <div *ngSwitchCase="'acciones'" class="actions-cell">
-                <button class="action-btn edit" (click)="openEditForm(product)" title="Editar">
+                <button class="action-btn edit" (click)="openEditForm(product)" title="Editar Producto">
                   <i class="ph ph-pencil-simple"></i>
                 </button>
-                <button class="action-btn delete" (click)="confirmDelete(product.id)" title="Eliminar">
+                <button class="action-btn delete" (click)="confirmDelete(product.id)" title="Eliminar Producto">
                   <i class="ph ph-trash"></i>
                 </button>
               </div>

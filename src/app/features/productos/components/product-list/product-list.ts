@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
-import { Producto, Categoria } from '../../models/producto.model';
+import { Producto, Categoria, Marca } from '../../models/producto.model';
 import { ProductForm } from '../product-form/product-form';
 import { CommonService } from '../../services/common.service';
 import { FormsModule } from '@angular/forms';
@@ -20,23 +20,28 @@ export class ProductList implements OnInit {
   products: Producto[] = [];
   filteredProducts: Producto[] = [];
   categories: Categoria[] = [];
+  brands: Marca[] = [];
   selectedCategoryId: string = '';
+  selectedBrandId: string = '';
+  selectedStockStatus: string = '';
+  searchQuery: string = '';
   isFormOpen = false;
   selectedProduct: Producto | null = null;
+  isFilterInputFocused = false;
 
   // Confirmation Dialog
   isConfirmOpen = false;
   productIdToDelete: number | undefined = undefined;
 
   // Dynamic columns
-  columns = [
+  columns: { key: string; label: string; filter: string; showFilter: boolean; noFilter?: boolean; noDrag?: boolean; }[] = [
     { key: 'id', label: 'ID', filter: '', showFilter: false },
     { key: 'nombre', label: 'Nombre', filter: '', showFilter: false },
     { key: 'categoria', label: 'Categoría', filter: '', showFilter: false },
     { key: 'marca', label: 'Marca', filter: '', showFilter: false },
     { key: 'precio', label: 'Precio', filter: '', showFilter: false },
     { key: 'stock', label: 'Stock', filter: '', showFilter: false },
-    { key: 'acciones', label: 'Acciones', filter: '', showFilter: false, noFilter: true, noDrag: true }
+    { key: 'acciones', label: 'Acciones', filter: '', showFilter: false, noFilter: true }
   ];
 
   // Drag and Drop state
@@ -46,12 +51,14 @@ export class ProductList implements OnInit {
   constructor(
     private productService: ProductService,
     private commonService: CommonService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private elementRef: ElementRef
   ) {}
 
   ngOnInit(): void {
     this.loadProducts();
     this.loadCategories();
+    this.loadBrands();
   }
 
   loadProducts(): void {
@@ -76,12 +83,41 @@ export class ProductList implements OnInit {
     });
   }
 
+  loadBrands(): void {
+    this.commonService.getBrands().subscribe({
+      next: (data) => {
+        this.brands = data;
+      },
+      error: (err) => console.error('Error fetching brands:', err)
+    });
+  }
+
   applyFilter(): void {
     this.filteredProducts = this.products.filter(product => {
       // 1. Global Category Filter
       const matchesCategory = !this.selectedCategoryId || product.categoria?.id === Number(this.selectedCategoryId);
       
-      // 2. Per-column local filter
+      // 2. Global Brand Filter
+      const matchesBrand = !this.selectedBrandId || product.marca?.id === Number(this.selectedBrandId);
+      
+      // 3. Global Search Query (Nombre, Descripción, Marca, Categoria)
+      const matchesSearch = !this.searchQuery || 
+        product.nombre.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
+        product.descripcion.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        product.marca?.nombre?.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        product.categoria?.nombre?.toLowerCase().includes(this.searchQuery.toLowerCase());
+
+      // 4. Global Stock Status Filter
+      let matchesStockStatus = true;
+      if (this.selectedStockStatus === 'low') {
+        matchesStockStatus = product.stock > 0 && product.stock < 10;
+      } else if (this.selectedStockStatus === 'out') {
+        matchesStockStatus = product.stock === 0;
+      } else if (this.selectedStockStatus === 'ok') {
+        matchesStockStatus = product.stock >= 10;
+      }
+
+      // 5. Per-column local filter
       const matchesColumns = this.columns.every(col => {
         if (!col.filter || col.noFilter) return true;
         
@@ -89,8 +125,20 @@ export class ProductList implements OnInit {
         return value.includes(col.filter.toLowerCase());
       });
 
-      return matchesCategory && matchesColumns;
+      return matchesCategory && matchesBrand && matchesSearch && matchesStockStatus && matchesColumns;
     });
+  }
+
+  clearAllFilters(): void {
+    this.selectedCategoryId = '';
+    this.selectedBrandId = '';
+    this.selectedStockStatus = '';
+    this.searchQuery = '';
+    this.columns.forEach(col => {
+      col.filter = '';
+      col.showFilter = false;
+    });
+    this.applyFilter();
   }
 
   getNestedValue(obj: any, key: string): any {
@@ -101,15 +149,37 @@ export class ProductList implements OnInit {
 
   toggleFilter(column: any): void {
     column.showFilter = !column.showFilter;
-    if (!column.showFilter) {
-      column.filter = '';
-      this.applyFilter();
+    if (column.showFilter) {
+      this.columns.forEach(col => {
+        if (col !== column) {
+          col.showFilter = false;
+        }
+      });
     }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const isHeaderClick = target.closest('.header-content');
+    if (!isHeaderClick) {
+      this.columns.forEach(col => col.showFilter = false);
+    }
+  }
+
+  hasActiveFilters(): boolean {
+    return !!(
+      this.searchQuery ||
+      this.selectedCategoryId ||
+      this.selectedBrandId ||
+      this.selectedStockStatus ||
+      this.columns.some(col => col.filter)
+    );
   }
 
   // Drag and Drop Handlers
   onDragStart(index: number): void {
-    if (this.columns[index].noDrag) return;
+    if (this.columns[index].noDrag || this.isFilterInputFocused) return;
     this.draggedColumnIndex = index;
   }
 

@@ -1,12 +1,12 @@
 <div class="page-header">
   <div class="header-row">
-    <div>
+    <div class="title-group">
       <h2><i class="ph ph-tag"></i> Gestión de Promociones</h2>
       <p>Crea y administra los cupones de descuento para tus clientes.</p>
     </div>
     <button class="btn-new" (click)="showForm = !showForm">
       <i class="ph" [class.ph-plus]="!showForm" [class.ph-x]="showForm"></i>
-      {{ showForm ? 'Cancelar' : 'Nuevo Cupón' }}
+      <span>{{ showForm ? 'Cancelar' : 'Nuevo Cupón' }}</span>
     </button>
   </div>
 </div>
@@ -43,38 +43,99 @@
   <i class="ph ph-spinner ph-spin"></i> Cargando cupones...
 </div>
 
-<div class="table-container" *ngIf="!isLoading">
-  <table class="data-table">
+<div class="table-card" *ngIf="!isLoading">
+  <table class="modern-table">
     <thead>
       <tr>
-        <th>Código</th>
-        <th>Descuento</th>
-        <th>Vencimiento</th>
-        <th>Estado</th>
-        <th>Acciones</th>
+        <th *ngFor="let col of columns; let i = index"
+            [draggable]="!col.noDrag && !isFilterInputFocused"
+            (dragstart)="onDragStart(i)"
+            (dragover)="onDragOver($event, i)"
+            (drop)="onDrop($event, i)"
+            (dragend)="onDragEnd()"
+            [class.dragging]="draggedColumnIndex === i"
+            [class.drop-target]="dragOverIndex === i"
+            [class.text-center]="col.key === 'acciones'"
+            [ngClass]="'col-' + col.key">
+          
+          <div class="header-content">
+            <span class="header-label">{{ col.label }}</span>
+            
+            <i *ngIf="!col.noFilter"
+               class="ph filter-icon" 
+               [ngClass]="col.filter ? 'ph-funnel-fill' : 'ph-funnel'"
+               [class.active]="col.filter || col.showFilter"
+               (click)="toggleFilter(col); $event.stopPropagation()"></i>
+
+            <!-- Absolute positioned filter popover -->
+            <div class="filter-popover" 
+                 *ngIf="col.showFilter" 
+                 (click)="$event.stopPropagation()">
+              <input type="text" 
+                     class="filter-popover-input" 
+                     [(ngModel)]="col.filter"
+                     (keyup)="applyFilter()"
+                     (focus)="isFilterInputFocused = true"
+                     (blur)="isFilterInputFocused = false"
+                     placeholder="Buscar..."
+                     (keydown.enter)="col.showFilter = false"
+                     (keydown.escape)="col.showFilter = false">
+              <button class="clear-filter-btn" *ngIf="col.filter" (click)="col.filter = ''; applyFilter(); col.showFilter = false">
+                <i class="ph ph-x"></i>
+              </button>
+            </div>
+          </div>
+        </th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let promo of promociones" [class.inactive-row]="!promo.activo">
-        <td><span class="code-badge">{{ promo.codigo }}</span></td>
-        <td><strong>{{ promo.porcentajeDescuento }}%</strong></td>
-        <td>{{ promo.fechaVencimiento }}</td>
-        <td>
-          <span class="status-pill" [class.active]="promo.activo" [class.blocked]="!promo.activo">
-            {{ promo.activo ? 'Activo' : 'Inactivo' }}
-          </span>
-        </td>
-        <td class="actions-cell">
-          <button class="btn-toggle-mini" (click)="toggleEstado(promo.id!)" [title]="promo.activo ? 'Pausar' : 'Activar'">
-            <i class="ph" [class.ph-pause]="promo.activo" [class.ph-play]="!promo.activo"></i>
-          </button>
-          <button class="btn-delete-mini" (click)="openDeleteConfirmation(promo.id!)" title="Eliminar">
-            <i class="ph ph-trash"></i>
-          </button>
-        </td>
+      <tr *ngFor="let promo of filteredPromociones" class="table-row" [class.inactive-row]="!promo.activo">
+        <ng-container *ngFor="let col of columns">
+          <td [ngSwitch]="col.key" 
+              [class.text-center]="col.key === 'acciones'" 
+              [ngClass]="'col-' + col.key">
+            
+            <!-- Código Column -->
+            <span *ngSwitchCase="'codigo'" class="code-badge">{{ promo.codigo }}</span>
+            
+            <!-- Descuento Column -->
+            <strong *ngSwitchCase="'porcentajeDescuento'" class="discount-badge">{{ promo.porcentajeDescuento }}%</strong>
+            
+            <!-- Vencimiento Column -->
+            <span *ngSwitchCase="'fechaVencimiento'" class="date-cell">{{ promo.fechaVencimiento }}</span>
+            
+            <!-- Estado Column -->
+            <span *ngSwitchCase="'activo'" class="status-pill" [class.active]="promo.activo" [class.blocked]="!promo.activo">
+              <i class="ph" [class.ph-check-circle]="promo.activo" [class.ph-x-circle]="!promo.activo"></i>
+              {{ promo.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+            
+            <!-- Acciones Column -->
+            <div *ngSwitchCase="'acciones'" class="actions-cell">
+              <button class="action-btn toggle-state" 
+                      [class.inactive]="!promo.activo"
+                      (click)="toggleEstado(promo.id!)" 
+                      [title]="promo.activo ? 'Pausar Cupón' : 'Activar Cupón'">
+                <i class="ph" [class.ph-pause]="promo.activo" [class.ph-play]="!promo.activo"></i>
+              </button>
+              <button class="action-btn delete" 
+                      (click)="openDeleteConfirmation(promo.id!)" 
+                      title="Eliminar Cupón">
+                <i class="ph ph-trash"></i>
+              </button>
+            </div>
+            
+            <!-- Default Column -->
+            <span *ngSwitchDefault>{{ getNestedValue(promo, col.key) }}</span>
+            
+          </td>
+        </ng-container>
       </tr>
-      <tr *ngIf="promociones.length === 0">
-        <td colspan="5" class="empty-row">No hay cupones creados aún.</td>
+      <tr *ngIf="filteredPromociones.length === 0">
+        <td [attr.colspan]="columns.length" class="empty-state">
+          <i class="ph ph-tag"></i>
+          <p>No se encontraron cupones con los filtros aplicados.</p>
+        </td>
       </tr>
     </tbody>
   </table>

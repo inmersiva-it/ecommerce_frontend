@@ -1,7 +1,9 @@
 <div class="reports-container">
-  <div class="header">
-    <h2>Reportes de Ventas</h2>
-    <p>Historial completo de compras realizadas por los clientes</p>
+  <div class="page-header">
+    <div class="title-group">
+      <h2><i class="ph ph-presentation-chart"></i> Reportes de Ventas</h2>
+      <p>Historial completo de compras realizadas por los clientes en la plataforma.</p>
+    </div>
   </div>
 
   <div class="stats-row">
@@ -21,45 +23,113 @@
     </div>
   </div>
 
-  <div class="table-container">
-    <div class="loading-state" *ngIf="isLoading">
-      <i class="ph ph-spinner ph-spin"></i> Cargando reportes...
-    </div>
+  <div class="loading-state" *ngIf="isLoading">
+    <i class="ph ph-spinner ph-spin"></i> Cargando reportes...
+  </div>
 
-    <table class="reports-table" *ngIf="!isLoading">
+  <div class="table-card" *ngIf="!isLoading">
+    <table class="modern-table">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Fecha</th>
-          <th>Cliente</th>
-          <th>Email</th>
-          <th>Total</th>
-          <th>Detalles</th>
-          <th>Acciones</th>
+          <th *ngFor="let col of columns; let i = index"
+              [draggable]="!col.noDrag && !isFilterInputFocused"
+              (dragstart)="onDragStart(i)"
+              (dragover)="onDragOver($event, i)"
+              (drop)="onDrop($event, i)"
+              (dragend)="onDragEnd()"
+              [class.dragging]="draggedColumnIndex === i"
+              [class.drop-target]="dragOverIndex === i"
+              [class.text-center]="col.key === 'acciones'"
+              [ngClass]="'col-' + col.key">
+            
+            <div class="header-content">
+              <span class="header-label">{{ col.label }}</span>
+              
+              <i *ngIf="!col.noFilter"
+                 class="ph filter-icon" 
+                 [ngClass]="col.filter ? 'ph-funnel-fill' : 'ph-funnel'"
+                 [class.active]="col.filter || col.showFilter"
+                 (click)="toggleFilter(col); $event.stopPropagation()"></i>
+
+              <!-- Absolute positioned filter popover -->
+              <div class="filter-popover" 
+                   *ngIf="col.showFilter" 
+                   (click)="$event.stopPropagation()">
+                <input type="text" 
+                       class="filter-popover-input" 
+                       [(ngModel)]="col.filter"
+                       (keyup)="applyFilter()"
+                       (focus)="isFilterInputFocused = true"
+                       (blur)="isFilterInputFocused = false"
+                       placeholder="Buscar..."
+                       (keydown.enter)="col.showFilter = false"
+                       (keydown.escape)="col.showFilter = false">
+                <button class="clear-filter-btn" *ngIf="col.filter" (click)="col.filter = ''; applyFilter(); col.showFilter = false">
+                  <i class="ph ph-x"></i>
+                </button>
+              </div>
+            </div>
+          </th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let compra of compras">
-          <td>#{{ compra.id }}</td>
-          <td>{{ compra.fecha | date:'medium' }}</td>
-          <td><strong>{{ compra.usuarioNombre }}</strong></td>
-          <td>{{ compra.usuarioEmail }}</td>
-          <td class="amount">{{ compra.total | currency:'USD' }}</td>
-          <td>
-            <ul class="detalle-lista">
-              <li *ngFor="let d of compra.detalles">
-                {{ d.cantidad }}x {{ d.productoNombre }}
-              </li>
-            </ul>
-          </td>
-          <td>
-            <button class="btn-delete" (click)="openDeleteConfirmation(compra.id)">
-              <i class="ph ph-trash"></i>
-            </button>
-          </td>
+        <tr *ngFor="let compra of filteredCompras" class="table-row">
+          <ng-container *ngFor="let col of columns">
+            <td [ngSwitch]="col.key" 
+                [class.text-center]="col.key === 'acciones'" 
+                [ngClass]="'col-' + col.key">
+              
+              <!-- ID Column -->
+              <span *ngSwitchCase="'id'" class="id-badge">#{{ compra.id }}</span>
+              
+              <!-- Fecha Column -->
+              <span *ngSwitchCase="'fechaPedido'" class="date-cell">{{ compra.fechaPedido | date:'medium' }}</span>
+              
+              <!-- Cliente Column -->
+              <strong *ngSwitchCase="'usuarioNombre'" class="client-name">{{ compra.usuarioNombre }}</strong>
+              
+              <!-- Email Column -->
+              <span *ngSwitchCase="'usuarioEmail'" class="client-email">{{ compra.usuarioEmail }}</span>
+
+              <!-- Método Pago Column -->
+              <span *ngSwitchCase="'metodoPagoNombre'" class="payment-method-badge">{{ compra.metodoPagoNombre }}</span>
+
+              <!-- Estado Column -->
+              <span *ngSwitchCase="'estado'" class="status-pill" [ngClass]="compra.estado.toLowerCase()">
+                {{ compra.estado }}
+              </span>
+              
+              <!-- Total Column -->
+              <span *ngSwitchCase="'total'" class="amount">{{ compra.total | currency:'USD' }}</span>
+              
+              <!-- Detalles Column -->
+              <div *ngSwitchCase="'detalles'" class="details-cell">
+                <ul class="detalle-lista">
+                  <li *ngFor="let d of compra.detalles" class="detalle-item">
+                    <span class="qty">{{ d.cantidad }}x</span>
+                    <span class="prod-name" [title]="d.productoNombre">{{ d.productoNombre }}</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <!-- Acciones Column -->
+              <div *ngSwitchCase="'acciones'" class="actions-cell">
+                <button class="action-btn delete" (click)="openDeleteConfirmation(compra.id)" title="Eliminar Reporte">
+                  <i class="ph ph-trash"></i>
+                </button>
+              </div>
+              
+              <!-- Default Column -->
+              <span *ngSwitchDefault>{{ getNestedValue(compra, col.key) }}</span>
+              
+            </td>
+          </ng-container>
         </tr>
-        <tr *ngIf="compras.length === 0">
-          <td colspan="7" class="empty-row">No hay ventas registradas aún.</td>
+        <tr *ngIf="filteredCompras.length === 0">
+          <td [attr.colspan]="columns.length" class="empty-state">
+            <i class="ph ph-presentation-chart"></i>
+            <p>No se encontraron reportes de ventas con los filtros aplicados.</p>
+          </td>
         </tr>
       </tbody>
     </table>

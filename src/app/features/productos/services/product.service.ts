@@ -34,4 +34,26 @@ export class ProductService {
   getByCategory(categoryId: number): Observable<Producto[]> {
     return this.http.get<Producto[]>(`${this.apiUrl}/categoria/${categoryId}`);
   }
+
+  getImages(productId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${productId}/imagenes`);
+  }
+
+  uploadImage(productId: number, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<any>(`${this.apiUrl}/${productId}/imagenes`, formData);
+  }
+
+  deleteImage(imageId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/imagenes/${imageId}`);
+  }
+
+  getReviews(productId: number): Observable<any[]> {
+    return this.http.get<any[]>(`http://localhost:8080/productos/${productId}/resenas`);
+  }
+
+  createReview(productId: number, review: { calificacion: number, comentario: string }): Observable<any> {
+    return this.http.post<any>(`http://localhost:8080/productos/${productId}/resenas`, review);
+  }
 }

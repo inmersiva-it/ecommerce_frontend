@@ -17,7 +17,7 @@
 
       <div class="cart-items" *ngIf="(cartService.items$ | async) as items">
         <div class="cart-item" *ngFor="let item of items">
-          <img src="https://placehold.co/100x100?text={{item.producto.nombre}}" alt="Product">
+          <img [src]="getProductImage(item.producto)" alt="{{item.producto.nombre}}" class="cart-item-img">
           <div class="item-info">
             <div class="item-header-row">
               <h4 class="item-name">{{ item.producto.nombre }}</h4>
@@ -76,20 +76,142 @@
         <span>Total General</span>
         <span class="total-amount">{{ getTotalConDescuento() | currency:'USD' }}</span>
       </div>
-      <button class="btn-checkout" (click)="openCheckoutConfirmation()">
+      <button class="btn-checkout" (click)="openCheckoutModal()">
         Finalizar Compra
       </button>
     </footer>
   </div>
 </div>
 
-<!-- Confirmation Modal -->
-<app-confirm-dialog
-  [isOpen]="isConfirmOpen"
-  title="Confirmar Pago"
-  [message]="'¿Deseas confirmar el pago por un total de ' + (getTotalConDescuento() | currency:'USD') + (descuentoPorcentaje > 0 ? ' (con ' + descuentoPorcentaje + '% de descuento)' : '') + '?'"
-  confirmText="Sí, pagar ahora"
-  cancelText="Cancelar"
-  (onConfirm)="confirmCheckout()"
-  (onCancel)="isConfirmOpen = false">
-</app-confirm-dialog>
+<!-- Checkout & Credit Card Payment Modal -->
+<div class="checkout-modal-overlay" *ngIf="isCheckoutModalOpen">
+  <div class="checkout-modal-card">
+    <div class="checkout-modal-header">
+      <h3><i class="ph ph-credit-card"></i> Procesar Pago</h3>
+      <button class="close-btn" (click)="isCheckoutModalOpen = false">&times;</button>
+    </div>
+    
+    <div class="checkout-modal-body">
+      <!-- Resumen del Pedido (Infordata style) -->
+      <div class="checkout-summary-box">
+        <div class="summary-top-row">
+          <div class="secure-badge">
+            <i class="ph ph-shield-check"></i>
+            <span>Pago seguro</span>
+          </div>
+          <h4>Resumen de pedido</h4>
+        </div>
+        
+        <div class="summary-middle-grid">
+          <div class="summary-legend">
+            <p>• Todos los precios incluyen IGV</p>
+            <p>• Los precios pueden cambiar sin previo aviso.</p>
+            <p>• Envío Gratuito a nivel nacional vía terrestre.</p>
+          </div>
+          
+          <div class="summary-pricing">
+            <div class="summary-row" *ngIf="descuentoPorcentaje > 0">
+              <span>Subtotal:</span>
+              <span>{{ cartService.getTotal() | currency:'USD' }}</span>
+            </div>
+            <div class="summary-row discount" *ngIf="descuentoPorcentaje > 0">
+              <span>Descuento ({{ descuentoPorcentaje }}%):</span>
+              <span>-{{ getDescuento() | currency:'USD' }}</span>
+            </div>
+            <div class="summary-row total">
+              <span class="total-label">Total:</span>
+              <span class="total-price-blue">{{ getTotalConDescuento() | currency:'USD' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selección de Método de Pago -->
+      <div class="payment-method-selector">
+        <label class="form-label">Método de Pago</label>
+        <div class="payment-options">
+          <label class="payment-option-card" [class.selected]="selectedPaymentMethod === 'tarjeta'">
+            <input type="radio" name="paymentMethod" value="tarjeta" [(ngModel)]="selectedPaymentMethod">
+            <i class="ph ph-credit-card"></i>
+            <span>Tarjeta de Crédito/Débito</span>
+          </label>
+          <label class="payment-option-card" [class.selected]="selectedPaymentMethod === 'transferencia'">
+            <input type="radio" name="paymentMethod" value="transferencia" [(ngModel)]="selectedPaymentMethod">
+            <i class="ph ph-bank"></i>
+            <span>Transferencia Bancaria</span>
+          </label>
+          <label class="payment-option-card" [class.selected]="selectedPaymentMethod === 'efectivo'">
+            <input type="radio" name="paymentMethod" value="efectivo" [(ngModel)]="selectedPaymentMethod">
+            <i class="ph ph-hand-coins"></i>
+            <span>Pago Contra Entrega</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Formulario de Tarjeta de Crédito -->
+      <div class="credit-card-form" *ngIf="selectedPaymentMethod === 'tarjeta'">
+        <!-- Tarjeta Visual Interactiva -->
+        <div class="interactive-card">
+          <div class="card-chip"></div>
+          <div class="card-logo"><i class="ph-bold ph-aperture"></i></div>
+          <div class="card-number-display">{{ cardNumber || '•••• •••• •••• ••••' }}</div>
+          <div class="card-bottom-row">
+            <div class="card-holder-display">
+              <span class="label">Titular</span>
+              <span class="value">{{ cardHolder || 'NOMBRE DEL TITULAR' }}</span>
+            </div>
+            <div class="card-expiry-display">
+              <span class="label">Vence</span>
+              <span class="value">{{ cardExpiry || 'MM/AA' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Campos de Entrada -->
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Nombre del Titular</label>
+            <input type="text" [(ngModel)]="cardHolder" placeholder="Ej. Juan Pérez" class="form-control">
+          </div>
+          <div class="form-group full-width">
+            <label>Número de Tarjeta</label>
+            <input type="text" [value]="cardNumber" (input)="formatCardNumber($event)" placeholder="0000 0000 0000 0000" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Fecha de Expiración</label>
+            <input type="text" [value]="cardExpiry" (input)="formatCardExpiry($event)" placeholder="MM/AA" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Código CVV</label>
+            <input type="password" [value]="cardCvv" (input)="formatCardCvv($event)" placeholder="•••" class="form-control" maxlength="4">
+          </div>
+        </div>
+      </div>
+
+      <!-- Instrucciones de Transferencia -->
+      <div class="payment-info-box" *ngIf="selectedPaymentMethod === 'transferencia'">
+        <i class="ph ph-info"></i>
+        <div>
+          <h5>Instrucciones de Transferencia</h5>
+          <p>Realice la transferencia al número de cuenta: <strong>191-12345678-0-99</strong> (Banco BCP). Envíe el comprobante al correo compras@pcstore.com para procesar su despacho.</p>
+        </div>
+      </div>
+
+      <!-- Instrucciones de Efectivo -->
+      <div class="payment-info-box" *ngIf="selectedPaymentMethod === 'efectivo'">
+        <i class="ph ph-info"></i>
+        <div>
+          <h5>Pago Contra Entrega</h5>
+          <p>Pague en efectivo o con tarjeta al recibir el producto en la puerta de su domicilio. Un repartidor se contactará previamente con usted.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="checkout-modal-footer">
+      <button class="btn-cancel" (click)="isCheckoutModalOpen = false">Cancelar</button>
+      <button class="btn-pay" [disabled]="!isPaymentFormValid()" (click)="confirmCheckout()">
+        <i class="ph ph-shield-check"></i> Confirmar y Pagar
+      </button>
+    </div>
+  </div>
+</div>

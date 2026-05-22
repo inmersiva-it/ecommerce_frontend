@@ -1,11 +1,11 @@
 <div class="modal-overlay">
-  <div class="modal-card">
+  <form [formGroup]="productForm" (ngSubmit)="save()" class="modal-card">
     <div class="modal-header">
       <h3>{{ product ? 'Editar Producto' : 'Nuevo Producto' }}</h3>
-      <button class="close-btn" (click)="close()"><i class="ph ph-x"></i></button>
+      <button type="button" class="close-btn" (click)="close()"><i class="ph ph-x"></i></button>
     </div>
 
-    <form [formGroup]="productForm" (ngSubmit)="save()" class="modal-body">
+    <div class="modal-body">
       <div class="form-grid">
         <div class="form-group full-width">
           <label>Nombre del Producto</label>
@@ -41,21 +41,85 @@
         </div>
 
         <div class="form-group">
-          <label>Marca</label>
-          <select formControlName="marcaId" [class.error]="productForm.get('marcaId')?.touched && productForm.get('marcaId')?.invalid">
-            <option value="" disabled>Seleccionar...</option>
-            <option *ngFor="let marca of brands" [value]="marca.id">{{ marca.nombre }}</option>
-          </select>
-          <small class="error-msg" *ngIf="productForm.get('marcaId')?.touched && productForm.get('marcaId')?.invalid">Selecciona una marca</small>
+          <div class="label-with-action">
+            <label>Marca</label>
+            <button type="button" class="btn-link-action" (click)="toggleAddBrandForm()">
+              {{ showAddBrandForm ? 'Seleccionar existente' : '+ Crear marca' }}
+            </button>
+          </div>
+
+          <ng-container *ngIf="!showAddBrandForm">
+            <select formControlName="marcaId" [class.error]="productForm.get('marcaId')?.touched && productForm.get('marcaId')?.invalid">
+              <option value="" disabled>Seleccionar...</option>
+              <option *ngFor="let marca of brands" [value]="marca.id">{{ marca.nombre }}</option>
+            </select>
+            <small class="error-msg" *ngIf="productForm.get('marcaId')?.touched && productForm.get('marcaId')?.invalid">Selecciona una marca</small>
+          </ng-container>
+
+          <ng-container *ngIf="showAddBrandForm">
+            <div class="inline-add-brand">
+              <input type="text" [(ngModel)]="newBrandName" [ngModelOptions]="{standalone: true}" placeholder="Nombre de la marca...">
+              <button type="button" class="btn-inline-save" (click)="saveNewBrand()" [disabled]="!newBrandName.trim()">
+                Guardar
+              </button>
+            </div>
+          </ng-container>
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn-cancel" (click)="close()">Cancelar</button>
-        <button type="submit" class="btn-save" [disabled]="productForm.invalid">
-          {{ product ? 'Actualizar Producto' : 'Guardar Producto' }}
-        </button>
+      <!-- Galería de imágenes (Solo para edición) -->
+      <div class="images-section" *ngIf="product && product.id">
+        <hr class="section-divider">
+        <h4 class="section-title"><i class="ph ph-image"></i> Galería de Imágenes</h4>
+        
+        <!-- Listado de imágenes actuales -->
+        <div class="images-grid" *ngIf="imagenes.length > 0">
+          <div class="image-card" *ngFor="let img of imagenes">
+            <img [src]="getImageUrl(img.url)" alt="Imagen del producto">
+            <button type="button" class="btn-delete-img" (click)="deleteImage(img.id)" title="Eliminar imagen">
+              <i class="ph ph-trash"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="no-images" *ngIf="imagenes.length === 0">
+          <p>Este producto no tiene imágenes. ¡Sube algunas!</p>
+        </div>
+
+        <!-- Cargador de imágenes -->
+        <div class="upload-zone">
+          <div class="upload-controls">
+            <label for="imageFileInput" class="custom-file-upload">
+              <i class="ph ph-upload-simple"></i> Seleccionar Imagen
+            </label>
+            <input id="imageFileInput" type="file" (change)="onFileSelected($event)" accept="image/*">
+            <span class="selected-file-name" *ngIf="selectedFile">{{ selectedFile.name }}</span>
+            <span class="selected-file-name no-file" *ngIf="!selectedFile">Ningún archivo seleccionado</span>
+          </div>
+          
+          <button type="button" class="btn-upload" (click)="uploadImage()" [disabled]="!selectedFile || uploading">
+            <i class="ph ph-spinner spinner" *ngIf="uploading"></i>
+            {{ uploading ? 'Subiendo...' : 'Subir Foto' }}
+          </button>
+        </div>
       </div>
-    </form>
-  </div>
+      
+      <!-- Info para creación -->
+      <div class="images-section-info" *ngIf="!product">
+        <hr class="section-divider">
+        <div class="creation-info-box">
+          <i class="ph ph-info"></i>
+          <span>Podrás gestionar la galería de fotos del producto después de guardarlo por primera vez.</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-cancel" (click)="close()">Cancelar</button>
+      <button type="submit" class="btn-save" [disabled]="productForm.invalid">
+        {{ product ? 'Actualizar Producto' : 'Guardar Producto' }}
+      </button>
+    </div>
+  </form>
 </div>
